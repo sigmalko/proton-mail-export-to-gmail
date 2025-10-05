@@ -24,7 +24,7 @@ public class GmailImapFetchRunner implements CommandLineRunner {
 
                 gmailImapFetcher.fetchLatestHeaders();
                 log.info("IMAP header fetch complete. Shutting down the application.");
-                final int exitCode = SpringApplication.exit(applicationContext, () -> 0);
-                System.exit(exitCode);
+                // final int exitCode = SpringApplication.exit(applicationContext, () -> 0);
+                // System.exit(exitCode);
         }
 }
