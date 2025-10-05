@@ -38,28 +38,28 @@
     }
   },
   	"secrets": {
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_USER": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_USER": {
+                        "description": "SSH username for the production Proton Mail export host.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		},
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_HOST": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_HOST": {
+                        "description": "SSH hostname for the production Proton Mail export host.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		},
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PRIVATE": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PRIVATE": {
+                        "description": "Private SSH key (PEM) for connecting to the production Proton Mail export host.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		},
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PUBLIC": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PUBLIC": {
+                        "description": "Public SSH key associated with the production Proton Mail export host.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		},
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_USERNAME": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_USERNAME": {
+                        "description": "Gmail app username used by the Proton Mail export integration.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		},
-		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_PASSWORD": {
-			"description": "",
+                "USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_PASSWORD": {
+                        "description": "Gmail app password used by the Proton Mail export integration.",
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		}
 	},	
