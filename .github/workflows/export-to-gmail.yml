@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/export-to-gmail-build-jar.yml'
+      - '.github/workflows/export-to-gmail.yml'
       - 'modules/export-to-gmail/pom.xml'
       - 'modules/export-to-gmail/src/**'
       - 'modules/export-to-gmail/Dockerfile-tag'
