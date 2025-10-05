@@ -20,7 +20,9 @@ EOF
 cd ..
 cd ..
 set -e
-chmod +x *.sh
+if ls *.sh 1> /dev/null 2>&1; then
+  chmod +x *.sh
+fi
 # cd modules/export-to-gmail
 # mvn clean package 
 echo "CODEX SYSTEM IS READY v.1.0"
