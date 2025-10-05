@@ -21,7 +21,7 @@ env:
   VERSION_PREFIX: v1.
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   id-token: write
 
