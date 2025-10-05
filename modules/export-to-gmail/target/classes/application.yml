@@ -9,6 +9,15 @@ logging.config: classpath:logback-dev.xml
 
 swagger.server.public.url: ${SWAGGER_SERVER_PUBLIC_URL:https://github.com/sigmalko/proton-mail-export-to-gmail}
 
+gmail:
+  imap:
+    host: ${GMAIL_IMAP_HOST:imap.gmail.com}
+    port: ${GMAIL_IMAP_PORT:993}
+    ssl-enabled: ${GMAIL_IMAP_SSL_ENABLED:true}
+    username: ${GMAIL_IMAP_USERNAME:}
+    password: ${GMAIL_IMAP_PASSWORD:}
+    message-limit: ${GMAIL_IMAP_MESSAGE_LIMIT:50}
+
 springdoc:
   use-management-port: false
   api-docs:

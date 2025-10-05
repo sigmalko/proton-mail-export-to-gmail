@@ -1,0 +1,26 @@
+FROM openjdk:21-slim
+ARG DOCKER_TAG_VERSION
+ARG GITHUB_RUN_NUMBER
+ENV DOCKER_TAG_VERSION=${DOCKER_TAG_VERSION}
+ENV GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
+RUN apt-get update -y && apt-get install -y locales 
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+RUN locale
+WORKDIR /workspace
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+
+COPY entry.sh /workspace/entry.sh
+RUN chmod +x /workspace/entry.sh
+
+# COPY target/*.jar /workspace/.
+# ENV TZ=Europe/Warsaw
+# ENV LOG_PATH=/workspace_out/logs
+# ENV PID_FILE=application.pid
+# VOLUME /workspace_out/logs
+
+# ENTRYPOINT java -server -Dspring.profiles.active=prod -Dlogging.config=classpath:logback-prod.xml -jar *.jar -Duser.timezone=$TZ -Djava.security.egd=file:/dev/./urandom
+
+ENTRYPOINT /workspace/entry.sh
