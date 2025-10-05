@@ -1,0 +1,36 @@
+spring:
+    application:
+        name: proton-mail-export-to-gmail
+    pid:
+        fail-on-write-error: true
+        file: app.pid
+        
+logging.config: classpath:logback-dev.xml
+
+swagger.server.public.url: ${SWAGGER_SERVER_PUBLIC_URL:https://github.com/sigmalko/proton-mail-export-to-gmail}
+
+springdoc:
+  use-management-port: false
+  api-docs:
+    path: /openapi.json
+    version: OPENAPI_3_1
+    enabled: true
+  remove-broken-reference-definitions: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  
+server.forward-headers-strategy: framework
+
+---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

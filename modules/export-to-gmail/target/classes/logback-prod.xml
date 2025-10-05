@@ -1,0 +1,39 @@
+<configuration>
+    <property name="SN_LOG_PATTERN" value="%d{MMdd HH:mm:ss.SSS}|%thread|%-5level|%logger| %m%n%ex{20}"/>
+    <property name="LOGS_ROOT" value="logs"/>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS_ROOT}/std.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${SN_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    <appender name="ERRORS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS_ROOT}/errors.log</file>
+        <append>true</append>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>${SN_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    <appender name="LIMITS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS_ROOT}/limits.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${SN_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    <logger name="LIMITS" level="INFO">
+        <appender-ref ref="LIMITS"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ERRORS"/>
+    </root>
+</configuration>
