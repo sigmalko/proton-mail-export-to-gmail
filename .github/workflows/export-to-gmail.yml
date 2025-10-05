@@ -93,6 +93,8 @@ jobs:
             echo "Uploading $file"
             gh release upload "${{ steps.set_version.outputs.target_version }}" "$file" --clobber
           done
+          echo "Uploading ../../README.md"
+          gh release upload "${{ steps.set_version.outputs.target_version }}" "../../README.md#README.md" --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}            
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
