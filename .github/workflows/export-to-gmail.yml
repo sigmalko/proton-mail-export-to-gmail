@@ -60,6 +60,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           mvn -B -ntp deploy -DskipTests --file pom.xml
-          -DaltDeploymentRepository=github::default::${{ env.GITHUB_PACKAGES_URL }}
+          -DaltDeploymentRepository=github::${{ env.GITHUB_PACKAGES_URL }}
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
