@@ -37,6 +37,32 @@
       ]
     }
   },
-	"postCreateCommand": "sudo chown -R vscode:vscode /workspace"
-//  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh"
+  	"secrets": {
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_USER": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		},
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_HOST": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		},
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PRIVATE": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		},
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_RSA_PUBLIC": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		},
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_USERNAME": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		},
+		"USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_PASSWORD": {
+			"description": "",
+			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
+		}
+	},	
+//	"postCreateCommand": "sudo chown -R vscode:vscode /workspace"
+  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh"
 }
