@@ -44,28 +44,18 @@ public class GmailImapFetcher {
 
                 try {
                         store = session.getStore(resolveProtocol());
-                        log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(),
-                                        properties.sslEnabled());
+                        log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(), properties.sslEnabled());
                         store.connect(properties.host(), properties.port(), properties.username(), properties.password());
-
                         log.info("store.isConnected(): {}", store.isConnected());
-                        Arrays.asList(store.getPersonalNamespaces()).forEach(ns -> {
-                                try {
-                                        log.info("Found personal namespace: {}", ns);
-                                        log.info("  -> full name: {}", ns.getFullName());
-                                        log.info("  -> name: {}", ns.getName());
-                                        log.info("  -> count: {}", ns.getMessageCount());
-                                } catch (MessagingException e) {
-                                        log.error("Failed to get namespace details", e);
-                                }
-                        });
-                        Arrays.asList(store.getSharedNamespaces()).forEach(ns -> log.info("Found shared namespace: {}", ns));
                         logFolderTopology(store);
                         
-                        inbox = store.getFolder("Proton");
+                        final var FOLDER_NAME = "Proton";
+                        // final var FOLDER_NAME = "INBOX";
+                        inbox = store.getFolder(FOLDER_NAME);
                         inbox.open(Folder.READ_ONLY);
                         final int messageCount = inbox.getMessageCount();
                         log.info("Messages found in the INBOX: {}", messageCount);
+
                         log.info("inbox.getFullName(): {}", inbox.getFullName());
                         log.info("inbox.getMode(): {}", inbox.getMode());
                         log.info("inbox.getName(): {}", inbox.getName());
@@ -87,6 +77,11 @@ public class GmailImapFetcher {
 
                         final int start = Math.max(1, messageCount - limit + 1);
                         final int end = messageCount;
+
+
+                        log.info("Getting messages {} - {}", start, end);
+
+
                         final Message[] messages = inbox.getMessages(start, end);
                         fetchEnvelopeOnly(inbox, messages);
 
