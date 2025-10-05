@@ -8,5 +8,8 @@ services:
     volumes:
       - ../../:/workspace
     environment:
-      SWAGGER_SERVER_PUBLIC_URL: http://localhost:8080      
+      SWAGGER_SERVER_PUBLIC_URL: http://localhost:8080
+      GMAIL_IMAP_USERNAME: ${USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_USERNAME}
+      GMAIL_IMAP_PASSWORD: ${USER_CODESPACE_PROTONMAILEXPORT_ENV_PRODUCTION_GMAIL_APP_PASSWORD}
+      GMAIL_IMAP_MESSAGE_LIMIT: 50
     command: sleep infinity
