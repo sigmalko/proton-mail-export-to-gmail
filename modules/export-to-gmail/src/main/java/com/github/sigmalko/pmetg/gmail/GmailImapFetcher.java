@@ -171,23 +171,53 @@ public class GmailImapFetcher {
 
         private void logFolderRecursively(Folder folder, int depth) throws MessagingException {
                 final var indent = "  ".repeat(depth);
-                int messageCount;
+                final var folderName = resolveFolderDisplayName(folder);
+
+                int folderType = Folder.HOLDS_FOLDERS | Folder.HOLDS_MESSAGES;
                 try {
-                        messageCount = folder.getMessageCount();
+                        folderType = folder.getType();
                 } catch (MessagingException exception) {
-                        log.warn("Failed to resolve message count for folder {}.", folder.getFullName(), exception);
-                        messageCount = -1;
+                        log.warn("Failed to determine folder type for {}. Assuming it may contain sub-folders.", folderName, exception);
                 }
 
-                log.info("{}- {} (messages: {})", indent, folder.getFullName(), messageCount);
+                final boolean holdsMessages = (folderType & Folder.HOLDS_MESSAGES) != 0;
+                String messageCountDescription = "n/a";
+                if (holdsMessages) {
+                        try {
+                                messageCountDescription = Integer.toString(folder.getMessageCount());
+                        } catch (MessagingException exception) {
+                                log.warn("Failed to resolve message count for folder {}.", folderName, exception);
+                                messageCountDescription = "error";
+                        }
+                }
 
-                if ((folder.getType() & Folder.HOLDS_FOLDERS) == 0) {
+                log.info("{}- {} (messages: {})", indent, folderName, messageCountDescription);
+
+                if ((folderType & Folder.HOLDS_FOLDERS) == 0) {
                         return;
                 }
 
-                for (Folder child : folder.list()) {
-                        logFolderRecursively(child, depth + 1);
+                try {
+                        for (Folder child : folder.list()) {
+                                logFolderRecursively(child, depth + 1);
+                        }
+                } catch (MessagingException exception) {
+                        log.warn("Failed to enumerate children for folder {}.", folderName, exception);
                 }
+        }
+
+        private String resolveFolderDisplayName(Folder folder) {
+                final var fullName = folder.getFullName();
+                if (StringUtils.hasText(fullName)) {
+                        return fullName;
+                }
+
+                final var name = folder.getName();
+                if (StringUtils.hasText(name)) {
+                        return name;
+                }
+
+                return "(root)";
         }
 
         private boolean hasCredentials() {
