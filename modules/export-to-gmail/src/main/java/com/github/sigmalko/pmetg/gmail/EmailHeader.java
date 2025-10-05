@@ -3,9 +3,9 @@ package com.github.sigmalko.pmetg.gmail;
 import java.time.Instant;
 
 public record EmailHeader(
-        String from,
-        String to,
+        int messageNumber,
+        String messageId,
         Instant sentAt,
-        String messageId
+        String from
 ) {
 }
