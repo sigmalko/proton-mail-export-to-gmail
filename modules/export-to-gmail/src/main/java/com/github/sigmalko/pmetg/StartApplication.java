@@ -3,16 +3,18 @@ package com.github.sigmalko.pmetg;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "StartApplication")
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
+@ConfigurationPropertiesScan
 public class StartApplication implements WebMvcConfigurer {
 
     public static void main(String[] args) {
@@ -23,7 +25,7 @@ public class StartApplication implements WebMvcConfigurer {
                 StartApplication.class
         );
         app.addListeners(new ApplicationPidFileWriter());
-        final var ctx = app.run(args);
+        app.run(args);
 
         final var out = new StringBuffer();
         out.append("GITHUB_RUN_NUMBER=");
