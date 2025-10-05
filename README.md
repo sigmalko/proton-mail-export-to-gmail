@@ -9,6 +9,8 @@ After launching it and authorizing access to your ProtonMail account, the tool w
 
 For example, if your mailbox contains **91,415 emails**, you will end up with **91,415 `*.eml` files** and **91,415 `*.json` files** on your disk.
 
+You need a Gmail account (`gmail.com`) to which the `proton-mail-export-to-gmail` tool will export your email messages (based on the `*.eml` and `*.json` files).
+
 # Solved issues
 - Google Workspace has data transfer limits for Gmail. They are described at https://support.google.com/a/answer/1071518?hl=en in the article titled `Gmail bandwidth limits`.
 - If you have a large number of emails in your ProtonMail account, the `Proton Mail Export CLI` tool can download, for example, 91,415 messages — which means you’ll end up with 91,415 `.eml` files and 91,415 `.json` files on your disk. The `proton-mail-export-to-gmail` application here solves this problem during migration.
@@ -27,3 +29,18 @@ For example, if your mailbox contains **91,415 emails**, you will end up with **
 | Download with IMAP   | 2500 MB  |
 | Download with POP    | 1250 MB  |
 | Upload with IMAP     | 500 MB   |
+
+
+# Technology stack for tool `proton-mail-export-to-gmail`
+
+- Spring-Boot
+- Java 21
+- Docker & Docker Compose
+- Spring-Boot Mail
+- DevContainer & Visual Studio Code
+
+# Required Resources
+
+- Create an account on **gmail.com**  
+- Use the tool called [`Proton Mail Export Tool`](https://proton.me/support/proton-mail-export-tool) to generate the `*.eml` and `*.json` files
+
