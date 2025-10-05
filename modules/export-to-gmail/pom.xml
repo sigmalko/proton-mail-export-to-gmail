@@ -9,8 +9,8 @@
                 <relativePath/> <!-- lookup parent from repository -->
         </parent>
 	<groupId>com.github.sigmalko.pmetg</groupId>
-        <artifactId>proton-mail-export-to-gmail</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+	        <artifactId>proton-mail-export-to-gmail</artifactId>
+	        <version>0.0.8-SNAPSHOT</version>
 	<name>proton-mail-export-to-gmail</name>
 	<description>proton-mail-export-to-gmail</description>
 	<url/>
@@ -87,6 +87,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>com.github.sigmalko.pmetg.StartApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
