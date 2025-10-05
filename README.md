@@ -60,3 +60,10 @@ Internet Access Domains
 - repo.maven.apache.org
 - maven.apache.org
 - apache.org
+
+
+# Problems with application
+
+- https://support.google.com/accounts/answer/185833 - `[ALERT] Application-specific password required: https://support.google.com/accounts/answer/185833 (Failure)`
+
+

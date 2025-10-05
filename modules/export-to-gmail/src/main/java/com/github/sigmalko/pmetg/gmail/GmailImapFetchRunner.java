@@ -18,6 +18,10 @@ public class GmailImapFetchRunner implements CommandLineRunner {
 
         @Override
         public void run(String... args) {
+                log.info("##################################################");
+                log.info("Fetching latest email headers from Gmail via IMAP...");
+                log.info("##################################################");
+
                 gmailImapFetcher.fetchLatestHeaders();
                 log.info("IMAP header fetch complete. Shutting down the application.");
                 final int exitCode = SpringApplication.exit(applicationContext, () -> 0);
