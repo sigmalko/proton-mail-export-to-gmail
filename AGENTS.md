@@ -1,6 +1,9 @@
 ## Programming Guidelines for Java
 
-- Use **Java 21** syntax  
+- Use **Java 21** syntax
 - Use **Lombok**
 - Use **Spring-boot**
 - For logging, use the Lombok annotation `@Slf4j(topic = "TOPIC_NAME")` instead of `LoggerFactory.getLogger`
+- Use English when writing descriptions or documentation for the project
+- When completing Codex-assigned tasks, bump the version number defined in `pom.xml`
+- To run tests, change to `modules/export-to-gmail` and execute `mvn clean package`
