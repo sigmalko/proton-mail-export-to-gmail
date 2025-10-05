@@ -9,6 +9,10 @@ logging.config: classpath:logback-dev.xml
 
 swagger.server.public.url: ${SWAGGER_SERVER_PUBLIC_URL:https://github.com/sigmalko/proton-mail-export-to-gmail}
 
+eml:
+  reader:
+    directory: ${EML_READER_DIRECTORY:}
+
 gmail:
   imap:
     host: ${GMAIL_IMAP_HOST:imap.gmail.com}
