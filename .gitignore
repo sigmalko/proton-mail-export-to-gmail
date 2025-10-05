@@ -13,3 +13,4 @@ hs_err_pid*
 replay_pid*
 
 .devcontainer/codespaces-export-to-gmail/ssh_config
+modules/export-to-gmail/target
