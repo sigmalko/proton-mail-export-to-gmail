@@ -66,4 +66,8 @@ Internet Access Domains
 
 - https://support.google.com/accounts/answer/185833 - `[ALERT] Application-specific password required: https://support.google.com/accounts/answer/185833 (Failure)`
 
+# Correlation method - via header Message-ID
+
+At the email standard level (RFC 5322), the **Message-ID** is created by the system that sends the message (either the mail client or the server) at the time the message is generated.  
+The string must be **globally unique** and typically follows the format `random-string@server-domain`.
 
