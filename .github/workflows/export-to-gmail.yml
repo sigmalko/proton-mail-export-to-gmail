@@ -15,6 +15,9 @@ on:
 env:
   JAVA_VERSION: 21
   WORKING_DIRECTORY: modules/export-to-gmail
+  MAVEN_USERNAME: ${{ github.actor }}
+  MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_PACKAGES_URL: https://maven.pkg.github.com/${{ github.repository }}
 
 permissions:
   contents: read
@@ -26,10 +29,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # permissions:
-    #   contents: read
-    #   packages: write
-    #   id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +39,27 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
-        
-      - name: Test with Maven
-        run: |
-          mvn -B clean package --file pom.xml
+          server-id: github
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: Build and test with Maven
+        run: mvn -B -ntp clean verify --file pom.xml
         working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-to-gmail-test-results
+          path: ${{ env.WORKING_DIRECTORY }}/target/surefire-reports
+
+      - name: Publish JAR to GitHub Packages
+        if: github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          mvn -B -ntp deploy -DskipTests --file pom.xml
+          -DaltDeploymentRepository=github::default::${{ env.GITHUB_PACKAGES_URL }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
