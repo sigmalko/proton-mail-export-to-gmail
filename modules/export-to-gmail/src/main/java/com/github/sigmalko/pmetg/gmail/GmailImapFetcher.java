@@ -50,7 +50,7 @@ public class GmailImapFetcher {
                                 }
                         });
                         Arrays.asList(store.getSharedNamespaces()).forEach(ns -> log.info("Found shared namespace: {}", ns));
-                        log.info("store.getDefaultFolder().getName(): ", store.getDefaultFolder().getName());
+                        logFolderTopology(store);
                         
                         inbox = store.getFolder("Proton");
                         inbox.open(Folder.READ_ONLY);
@@ -72,6 +72,42 @@ public class GmailImapFetcher {
                 } finally {
                         closeFolder(inbox);
                         closeStore(store);
+                }
+        }
+
+        private void logFolderTopology(Store store) {
+                try {
+                        final var defaultFolder = store.getDefaultFolder();
+                        if (defaultFolder == null) {
+                                log.warn("Unable to log Gmail folder topology because the default folder is null.");
+                                return;
+                        }
+
+                        log.info("Gmail folder topology:");
+                        logFolderRecursively(defaultFolder, 0);
+                } catch (MessagingException exception) {
+                        log.warn("Failed to log Gmail folder topology.", exception);
+                }
+        }
+
+        private void logFolderRecursively(Folder folder, int depth) throws MessagingException {
+                final var indent = "  ".repeat(depth);
+                int messageCount;
+                try {
+                        messageCount = folder.getMessageCount();
+                } catch (MessagingException exception) {
+                        log.warn("Failed to resolve message count for folder {}.", folder.getFullName(), exception);
+                        messageCount = -1;
+                }
+
+                log.info("{}- {} (messages: {})", indent, folder.getFullName(), messageCount);
+
+                if ((folder.getType() & Folder.HOLDS_FOLDERS) == 0) {
+                        return;
+                }
+
+                for (Folder child : folder.list()) {
+                        logFolderRecursively(child, depth + 1);
                 }
         }
 
