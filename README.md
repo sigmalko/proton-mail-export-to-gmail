@@ -44,3 +44,19 @@ You need a Gmail account (`gmail.com`) to which the `proton-mail-export-to-gmail
 - Create an account on **gmail.com**  
 - Use the tool called [`Proton Mail Export Tool`](https://proton.me/support/proton-mail-export-tool) to generate the `*.eml` and `*.json` files
 
+# Codex ChatGTP configuration
+
+Use script
+
+```
+#!/bin/bash
+chmod +x .codex/export-to-gmail/*.sh
+cd .codex/export-to-gmail/
+./setup-codex.sh
+```
+
+Internet Access Domains
+
+- repo.maven.apache.org
+- maven.apache.org
+- apache.org
