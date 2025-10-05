@@ -1,0 +1,42 @@
+{
+	"name": "codespaces-export-to-gmail",
+	"dockerComposeFile": [ "docker-compose.yml" ],
+	"service": "codespaces-export-to-gmail",
+	"workspaceFolder": "/workspace",
+	"features": {
+		// "ghcr.io/devcontainers/features/docker-in-docker": {
+		// },    
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": "true",
+      "installGradle": "false",
+			"MAVENVERSION": "3.9.6"
+    }
+  },
+  "customizations": {
+		"codespaces": {
+			"openFiles": [
+				"AGENTS.md"
+			]
+		},
+		"extensions": [
+			"vscjava.vscode-java-pack",
+			"pivotal.vscode-spring-boot",
+			"redhat.vscode-yaml",
+			"vmware.vscode-boot-dev-pack"
+		],        
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "pivotal.vscode-spring-boot",
+        "redhat.vscode-yaml",
+		"vmware.vscode-boot-dev-pack",
+        "openai.chatgpt",
+		"GitHub.copilot-chat",
+		"GitHub.copilot"        
+      ]
+    }
+  },
+	"postCreateCommand": "sudo chown -R vscode:vscode /workspace"
+//  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh"
+}

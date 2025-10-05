@@ -1,0 +1,12 @@
+services:
+  codespaces-export-to-gmail:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JDK_VERSION: 21
+    volumes:
+      - ../../:/workspace
+    environment:
+      SWAGGER_SERVER_PUBLIC_URL: http://localhost:8080      
+    command: sleep infinity
