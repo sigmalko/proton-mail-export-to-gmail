@@ -39,6 +39,10 @@ You need a Gmail account (`gmail.com`) to which the `proton-mail-export-to-gmail
 - Spring-Boot Mail
 - DevContainer & Visual Studio Code
 
+# Refactoring Proposals
+
+See [REFACTORING_PROPOSALS.md](REFACTORING_PROPOSALS.md) (English) or [REFACTORING_PROPOSALS_PL.md](REFACTORING_PROPOSALS_PL.md) (Polish) for detailed refactoring suggestions to improve code quality and maintainability.
+
 # Required Resources
 
 - Create an account on **gmail.com**  
