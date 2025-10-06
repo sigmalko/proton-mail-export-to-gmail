@@ -2,9 +2,11 @@ package com.github.sigmalko.pmetg.gmail;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -28,6 +30,32 @@ public class GmailImapFetcher {
         private final GmailImapClientSupport clientSupport;
         private final GmailEmailHeaderMapper mapper;
         private final GmailHeaderSynchronizer headerSynchronizer;
+
+        public List<String> fetchReadableFolders() {
+                if (!clientSupport.hasCredentials()) {
+                        log.warn("Gmail IMAP credentials are not configured; skipping readable folder discovery.");
+                        return List.of();
+                }
+
+                try (var session = clientSupport.openReadOnlyFolder(properties.folder())) {
+                        final var store = session.store();
+                        final var readableFolders = collectReadableFolders(store);
+
+                        if (readableFolders.isEmpty()) {
+                                log.info("No readable Gmail folders were discovered.");
+                        } else {
+                                log.info(
+                                                "Readable Gmail folders ({}): {}",
+                                                readableFolders.size(),
+                                                String.join(", ", readableFolders));
+                        }
+
+                        return List.copyOf(readableFolders);
+                } catch (MessagingException exception) {
+                        log.error("Failed to discover readable Gmail folders.", exception);
+                        return List.of();
+                }
+        }
 
         public List<EmailHeader> fetchLatestHeaders() {
                 if (!clientSupport.hasCredentials()) {
@@ -104,53 +132,90 @@ public class GmailImapFetcher {
 
         private void logFolderTopology(Store store) {
                 try {
-                        final var defaultFolder = store.getDefaultFolder();
+                        final var defaultFolder = resolveDefaultFolder(store);
                         if (defaultFolder == null) {
-                                log.warn("Unable to log Gmail folder topology because the default folder is null.");
                                 return;
                         }
 
                         log.info("Gmail folder topology:");
-                        logFolderRecursively(defaultFolder, 0);
+                        visitFolderRecursively(defaultFolder, 0, descriptor -> log.info(
+                                        "{}- {} (messages: {})",
+                                        "  ".repeat(descriptor.depth()),
+                                        descriptor.displayName(),
+                                        descriptor.messageCountDescription()));
                 } catch (MessagingException exception) {
                         log.warn("Failed to log Gmail folder topology.", exception);
                 }
         }
 
-        private void logFolderRecursively(Folder folder, int depth) throws MessagingException {
-                final var indent = "  ".repeat(depth);
+        private List<String> collectReadableFolders(Store store) throws MessagingException {
+                final var defaultFolder = resolveDefaultFolder(store);
+                if (defaultFolder == null) {
+                        return List.of();
+                }
+
+                final var readableFolders = new ArrayList<String>();
+                visitFolderRecursively(defaultFolder, 0, descriptor -> {
+                        if (descriptor.holdsMessages() && !"(root)".equals(descriptor.displayName())) {
+                                readableFolders.add(descriptor.displayName());
+                        }
+                });
+                return readableFolders;
+        }
+
+        private Folder resolveDefaultFolder(Store store) throws MessagingException {
+                final var defaultFolder = store.getDefaultFolder();
+                if (defaultFolder == null) {
+                        log.warn("Unable to access Gmail folders because the default folder is null.");
+                }
+                return defaultFolder;
+        }
+
+        private void visitFolderRecursively(Folder folder, int depth, Consumer<FolderDescriptor> visitor) throws MessagingException {
+                final var descriptor = buildFolderDescriptor(folder, depth);
+                visitor.accept(descriptor);
+
+                if (!descriptor.holdsFolders()) {
+                        return;
+                }
+
+                try {
+                        for (Folder child : folder.list()) {
+                                visitFolderRecursively(child, depth + 1, visitor);
+                        }
+                } catch (MessagingException exception) {
+                        log.warn("Failed to enumerate children for folder {}.", descriptor.displayName(), exception);
+                }
+        }
+
+        private FolderDescriptor buildFolderDescriptor(Folder folder, int depth) {
                 final var folderName = resolveFolderDisplayName(folder);
 
                 int folderType = Folder.HOLDS_FOLDERS | Folder.HOLDS_MESSAGES;
                 try {
                         folderType = folder.getType();
                 } catch (MessagingException exception) {
-                        log.warn("Failed to determine folder type for {}. Assuming it may contain sub-folders.", folderName, exception);
+                        log.warn(
+                                        "Failed to determine folder type for {}. Assuming it may contain sub-folders.",
+                                        folderName,
+                                        exception);
                 }
 
                 final boolean holdsMessages = (folderType & Folder.HOLDS_MESSAGES) != 0;
-                String messageCountDescription = "n/a";
-                if (holdsMessages) {
-                        try {
-                                messageCountDescription = Integer.toString(folder.getMessageCount());
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to resolve message count for folder {}.", folderName, exception);
-                                messageCountDescription = "error";
-                        }
-                }
+                final boolean holdsFolders = (folderType & Folder.HOLDS_FOLDERS) != 0;
+                final String messageCountDescription = holdsMessages
+                                ? resolveMessageCountDescription(folder, folderName)
+                                : "n/a";
 
-                log.info("{}- {} (messages: {})", indent, folderName, messageCountDescription);
+                return new FolderDescriptor(folderName, depth, holdsMessages, holdsFolders, messageCountDescription);
+        }
 
-                if ((folderType & Folder.HOLDS_FOLDERS) == 0) {
-                        return;
-                }
-
+        private String resolveMessageCountDescription(Folder folder, String folderName) {
                 try {
-                        for (Folder child : folder.list()) {
-                                logFolderRecursively(child, depth + 1);
-                        }
+                        return Integer.toString(folder.getMessageCount());
                 } catch (MessagingException exception) {
-                        log.warn("Failed to enumerate children for folder {}.", folderName, exception);
+                        log.warn("Failed to resolve message count for folder {}.", folderName, exception);
+                        return "error";
                 }
         }
 
@@ -166,6 +231,14 @@ public class GmailImapFetcher {
                 }
 
                 return "(root)";
+        }
+
+        private record FolderDescriptor(
+                String displayName,
+                int depth,
+                boolean holdsMessages,
+                boolean holdsFolders,
+                String messageCountDescription) {
         }
 
 }
