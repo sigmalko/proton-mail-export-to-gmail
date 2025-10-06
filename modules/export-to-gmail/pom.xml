@@ -10,7 +10,7 @@
         </parent>
 	<groupId>com.github.sigmalko.pmetg</groupId>
 	        <artifactId>proton-mail-export-to-gmail</artifactId>
-    <version>0.0.18-SNAPSHOT</version>
+    <version>0.0.19-SNAPSHOT</version>
 	<name>proton-mail-export-to-gmail</name>
 	<description>proton-mail-export-to-gmail</description>
 	<url/>

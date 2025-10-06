@@ -139,19 +139,19 @@ public class GmailImapFetcher {
                                         ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
                                         : null;
 
-                        if (!StringUtils.hasText(header.messageId())) {
-                                log.debug(
-                                                "Skipping Gmail message {} because it does not contain Message-ID header.",
-                                                header.messageNumber());
-                                problemService.logRemoteProblem(
-                                                messageDate,
-                                                header.from(),
-                                                "Missing Message-ID header for Gmail message number "
-                                                                + header.messageNumber());
-                                continue;
-                        }
-
                         try {
+                                if (!StringUtils.hasText(header.messageId())) {
+                                        log.debug(
+                                                        "Skipping Gmail message {} because it does not contain Message-ID header.",
+                                                        header.messageNumber());
+                                        problemService.logRemoteProblem(
+                                                        messageDate,
+                                                        header.from(),
+                                                        "Missing Message-ID header for Gmail message number "
+                                                                        + header.messageNumber());
+                                        continue;
+                                }
+
                                 final var existing = migrationService.findByMessageId(header.messageId());
                                 if (existing.isPresent()) {
                                         markMessageAsExisting(existing.get());
@@ -159,6 +159,14 @@ public class GmailImapFetcher {
                                         migrationService.createGmailMigration(header.messageId(), messageDate);
                                 }
                         } catch (Exception exception) {
+                                if (!StringUtils.hasText(header.messageId())) {
+                                        log.warn(
+                                                        "Failed to log missing Message-ID problem for Gmail message {}.",
+                                                        header.messageNumber(),
+                                                        exception);
+                                        continue;
+                                }
+
                                 log.warn(
                                                 "Failed to persist Gmail message {} (messageId={}).",
                                                 header.messageNumber(),
