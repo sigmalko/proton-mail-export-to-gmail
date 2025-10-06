@@ -8,6 +8,7 @@ public record GmailImapProperties(
         @DefaultValue("imap.gmail.com") String host,
         @DefaultValue("993") int port,
         @DefaultValue("true") boolean sslEnabled,
+        @DefaultValue("INBOX") String folder,
         String username,
         String password,
         @DefaultValue("50") int messageLimit

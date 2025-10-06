@@ -35,23 +35,14 @@ public class GmailImapFetcher {
                         return List.of();
                 }
 
-                final var session = clientSupport.createSession();
-                Store store = null;
-                Folder inbox = null;
-
-                try {
-                        store = session.getStore(clientSupport.resolveProtocol());
-                        log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(), properties.sslEnabled());
-                        store.connect(properties.host(), properties.port(), properties.username(), properties.password());
-                        log.info("store.isConnected(): {}", store.isConnected());
+                try (var session = clientSupport.openReadOnlyFolder(properties.folder())) {
+                        final var store = session.store();
                         logFolderTopology(store);
-                        
-                        final var FOLDER_NAME = "Proton";
-                        // final var FOLDER_NAME = "INBOX";
-                        inbox = store.getFolder(FOLDER_NAME);
-                        inbox.open(Folder.READ_ONLY);
+
+                        final var inbox = session.folder();
+                        log.info("Opened Gmail folder '{}' in read-only mode.", inbox.getFullName());
                         final int messageCount = inbox.getMessageCount();
-                        log.info("Messages found in the INBOX: {}", messageCount);
+                        log.info("Messages found in folder {}: {}", inbox.getFullName(), messageCount);
 
                         log.info("inbox.getFullName(): {}", inbox.getFullName());
                         log.info("inbox.getMode(): {}", inbox.getMode());
@@ -92,9 +83,6 @@ public class GmailImapFetcher {
                 } catch (MessagingException exception) {
                         log.error("Failed to fetch Gmail message headers.", exception);
                         return List.of();
-                } finally {
-                        clientSupport.closeFolder(inbox);
-                        clientSupport.closeStore(store);
                 }
         }
 

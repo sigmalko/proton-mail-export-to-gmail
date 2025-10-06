@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import jakarta.mail.Folder;
@@ -17,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class GmailImapClientSupportTest {
 
         private static final GmailImapProperties DEFAULT_PROPERTIES =
-                        new GmailImapProperties("imap.gmail.com", 993, true, "user", "pass", 10);
+                        new GmailImapProperties("imap.gmail.com", 993, true, "INBOX", "user", "pass", 10);
 
         private final GmailImapClientSupport support = new GmailImapClientSupport(DEFAULT_PROPERTIES);
 
@@ -28,7 +27,7 @@ class GmailImapClientSupportTest {
 
         @Test
         void hasCredentialsReturnsFalseWhenUsernameMissing() {
-                final var properties = new GmailImapProperties("imap.gmail.com", 993, true, null, "pass", 10);
+                final var properties = new GmailImapProperties("imap.gmail.com", 993, true, "INBOX", null, "pass", 10);
                 final var clientSupport = new GmailImapClientSupport(properties);
 
                 assertThat(clientSupport.hasCredentials()).isFalse();
@@ -56,83 +55,43 @@ class GmailImapClientSupportTest {
 
         @Test
         void resolveProtocolReturnsImapWhenSslDisabled() {
-                final var properties = new GmailImapProperties("imap.gmail.com", 143, false, "user", "pass", 10);
+                final var properties = new GmailImapProperties("imap.gmail.com", 143, false, "INBOX", "user", "pass", 10);
                 final var clientSupport = new GmailImapClientSupport(properties);
 
                 assertThat(clientSupport.resolveProtocol()).isEqualTo("imap");
         }
 
         @Test
-        void closeFolderClosesOpenFolder() throws Exception {
+        void folderSessionCloseClosesOpenResources() throws Exception {
                 final Folder folder = mock(Folder.class);
                 when(folder.isOpen()).thenReturn(true);
+                final Store store = mock(Store.class);
+                when(store.isConnected()).thenReturn(true);
 
-                support.closeFolder(folder);
+                try (var session = new GmailImapClientSupport.FolderSession(store, folder)) {
+                        // no-op
+                }
 
                 verify(folder).close(false);
+                verify(store).close();
         }
 
         @Test
-        void closeFolderSwallowsExceptions() throws Exception {
+        void folderSessionCloseSwallowsExceptions() throws Exception {
+                final Store store = mock(Store.class);
+                when(store.isConnected()).thenReturn(true);
                 final Folder folder = mock(Folder.class);
                 when(folder.isOpen()).thenReturn(true);
                 doThrow(new MessagingException("boom")).when(folder).close(false);
+                doThrow(new MessagingException("boom"))
+                                .when(store)
+                                .close();
 
-                support.closeFolder(folder);
+                try (var session = new GmailImapClientSupport.FolderSession(store, folder)) {
+                        // no-op
+                }
 
                 verify(folder).close(false);
-        }
-
-        @Test
-        void closeFolderDoesNothingWhenFolderNull() {
-                support.closeFolder(null);
-        }
-
-        @Test
-        void closeStoreClosesConnectedStore() throws Exception {
-                final Store store = mock(Store.class);
-                when(store.isConnected()).thenReturn(true);
-
-                support.closeStore(store);
-
                 verify(store).close();
-        }
-
-        @Test
-        void closeStoreSwallowsExceptions() throws Exception {
-                final Store store = mock(Store.class);
-                when(store.isConnected()).thenReturn(true);
-                doThrow(new MessagingException("boom")).when(store).close();
-
-                support.closeStore(store);
-
-                verify(store).close();
-        }
-
-        @Test
-        void closeStoreDoesNothingWhenStoreNull() {
-                support.closeStore(null);
-        }
-
-        @Test
-        void closeFolderDoesNothingWhenNotOpen() throws Exception {
-                final Folder folder = mock(Folder.class);
-                when(folder.isOpen()).thenReturn(false);
-
-                support.closeFolder(folder);
-
-                verify(folder).isOpen();
-                verifyNoMoreInteractions(folder);
-        }
-
-        @Test
-        void closeStoreDoesNothingWhenNotConnected() throws Exception {
-                final Store store = mock(Store.class);
-                when(store.isConnected()).thenReturn(false);
-
-                support.closeStore(store);
-
-                verify(store).isConnected();
-                verifyNoMoreInteractions(store);
         }
 }
