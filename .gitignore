@@ -15,4 +15,5 @@ replay_pid*
 .devcontainer/codespaces-export-to-gmail/.env
 .devcontainer/codespaces-export-to-gmail/ssh_config
 modules/export-to-gmail/target
+modules/export-to-gmail/target/classes
 modules/export-to-gmail/app.pid

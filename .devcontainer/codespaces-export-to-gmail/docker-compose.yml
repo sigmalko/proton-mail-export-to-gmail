@@ -14,4 +14,5 @@ services:
       GMAIL_IMAP_MESSAGE_LIMIT: 50
       EML_READER_DIRECTORY: /tmp/emls
       PMETG_DATABASE_FILE_PATH: /tmp/h2db
+      SERVER_PORT: 8080
     command: sleep infinity
