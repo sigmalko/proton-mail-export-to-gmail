@@ -80,15 +80,15 @@ public final class RequestUtils {
             return false;
         }
 
-        return switch (request.getHeader(header)) {
-            case null, String s when s.isBlank() -> false;
-            case String headerValue -> {
-                final String normalizedHeader = headerValue.toLowerCase(Locale.ROOT);
-                yield Arrays.stream(fragments)
-                        .filter(Objects::nonNull)
-                        .map(fragment -> fragment.toLowerCase(Locale.ROOT))
-                        .anyMatch(normalizedHeader::contains);
-            }
-        };
+        final String headerValue = request.getHeader(header);
+        if (headerValue == null || headerValue.isBlank()) {
+            return false;
+        }
+
+        final String normalizedHeader = headerValue.toLowerCase(Locale.ROOT);
+        return Arrays.stream(fragments)
+                .filter(Objects::nonNull)
+                .map(fragment -> fragment.toLowerCase(Locale.ROOT))
+                .anyMatch(normalizedHeader::contains);
     }
 }

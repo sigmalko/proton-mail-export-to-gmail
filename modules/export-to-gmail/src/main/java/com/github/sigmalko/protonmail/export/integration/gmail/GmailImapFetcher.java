@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Folder;
@@ -14,6 +15,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Store;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
@@ -68,56 +70,70 @@ public class GmailImapFetcher {
                         logFolderTopology(store);
 
                         final var inbox = session.folder();
-                        log.info("Opened Gmail folder '{}' in read-only mode.", inbox.getFullName());
-                        final int messageCount = inbox.getMessageCount();
-                        log.info("Messages found in folder {}: {}", inbox.getFullName(), messageCount);
+                        logFolderDetails(inbox);
 
-                        log.info("inbox.getFullName(): {}", inbox.getFullName());
-                        log.info("inbox.getMode(): {}", inbox.getMode());
-                        log.info("inbox.getName(): {}", inbox.getName());
-                        log.info("inbox.getSeparator(): {}", inbox.getSeparator());
-                        log.info("inbox.getType(): {}", inbox.getType());
-                        log.info("inbox.getUnreadMessageCount(): {}", inbox.getUnreadMessageCount());
-                        log.info("inbox.getNewMessageCount(): {}", inbox.getNewMessageCount());
-
-                        final int limit = properties.messageLimit();
-                        if (limit <= 0) {
-                                log.info("Configured message limit is {}. Skipping header retrieval.", limit);
-                                return List.of();
-                        }
-
-                        if (messageCount == 0) {
-                                log.info("Folder {} is empty. Skipping header retrieval.", inbox.getFullName());
-                                return List.of();
-                        }
-
-                        final int start = Math.max(1, messageCount - limit + 1);
-                        final int end = messageCount;
-
-
-                        log.info("Getting messages {} - {}", start, end);
-
-
-                        final Message[] messages = inbox.getMessages(start, end);
-                        fetchEnvelopeOnly(inbox, messages);
-
-                        final var headers = Arrays.stream(messages)
-                                        .<EmailHeader>mapMulti(mapper::map)
-                                        .sorted(Comparator.comparingInt(EmailHeader::messageNumber).reversed())
-                                        .toList();
-                        headerSynchronizer.synchronize(headers);
-                        headers.forEach(this::logHeader);
-                        return headers;
+                        return determineWindow(inbox, properties.messageLimit())
+                                        .map(window -> fetchHeaders(inbox, window))
+                                        .orElseGet(List::of);
                 } catch (MessagingException exception) {
                         log.error("Failed to fetch Gmail message headers.", exception);
                         return List.of();
                 }
         }
 
+        private void logFolderDetails(Folder inbox) throws MessagingException {
+                log.info("Opened Gmail folder '{}' in read-only mode.", inbox.getFullName());
+                log.info("Messages found in folder {}: {}", inbox.getFullName(), inbox.getMessageCount());
+
+                log.info("inbox.getFullName(): {}", inbox.getFullName());
+                log.info("inbox.getMode(): {}", inbox.getMode());
+                log.info("inbox.getName(): {}", inbox.getName());
+                log.info("inbox.getSeparator(): {}", inbox.getSeparator());
+                log.info("inbox.getType(): {}", inbox.getType());
+                log.info("inbox.getUnreadMessageCount(): {}", inbox.getUnreadMessageCount());
+                log.info("inbox.getNewMessageCount(): {}", inbox.getNewMessageCount());
+        }
+
+        private Optional<MessageWindow> determineWindow(Folder inbox, int limit) throws MessagingException {
+                if (limit <= 0) {
+                        log.info("Configured message limit is {}. Skipping header retrieval.", limit);
+                        return Optional.empty();
+                }
+
+                final int messageCount = inbox.getMessageCount();
+                if (messageCount == 0) {
+                        log.info("Folder {} is empty. Skipping header retrieval.", inbox.getFullName());
+                        return Optional.empty();
+                }
+
+                final int start = Math.max(1, messageCount - limit + 1);
+                final int end = messageCount;
+
+                log.info("Getting messages {} - {}", start, end);
+                return Optional.of(new MessageWindow(start, end));
+        }
+
+        @SneakyThrows(MessagingException.class)
+        private List<EmailHeader> fetchHeaders(Folder inbox, MessageWindow window) {
+                final Message[] messages = inbox.getMessages(window.start(), window.end());
+                fetchEnvelopeOnly(inbox, messages);
+
+                final var headers = Arrays.stream(messages)
+                                .<EmailHeader>mapMulti(mapper::map)
+                                .sorted(Comparator.comparingInt(EmailHeader::messageNumber).reversed())
+                                .toList();
+                headerSynchronizer.synchronize(headers);
+                headers.forEach(this::logHeader);
+                return headers;
+        }
+
         private void fetchEnvelopeOnly(Folder inbox, Message[] messages) throws MessagingException {
                 final var fetchProfile = new FetchProfile();
                 fetchProfile.add(FetchProfile.Item.ENVELOPE);
                 inbox.fetch(messages, fetchProfile);
+        }
+
+        private record MessageWindow(int start, int end) {
         }
 
         private void logHeader(EmailHeader header) {
