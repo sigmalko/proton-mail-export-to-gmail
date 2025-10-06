@@ -1,6 +1,12 @@
 spring:
     application:
         name: proton-mail-export-to-gmail
+    servlet:
+        encoding:
+            charset: UTF-8
+            force-request: true
+            force-response: true
+            enabled: true
     datasource:
         url: jdbc:h2:file:${protonmail-export.database.file-path};AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
         driver-class-name: org.h2.Driver
