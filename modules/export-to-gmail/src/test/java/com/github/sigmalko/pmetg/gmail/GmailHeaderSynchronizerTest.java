@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import com.github.sigmalko.pmetg.migrations.MigrationEntity;
 import com.github.sigmalko.pmetg.migrations.MigrationService;
 import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+import com.github.sigmalko.pmetg.migrations.MigrationRepository.MigrationStatus;
 import com.github.sigmalko.pmetg.problems.ProblemService;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -68,12 +68,9 @@ class GmailHeaderSynchronizerTest {
         @Test
         void synchronizeUpdatesExistingFlagWhenNeeded() {
                 final EmailHeader header = new EmailHeader(3, "<id-3>", null, "Carol");
-                final MigrationEntity entity = MigrationEntity.builder()
-                                .messageId("<id-3>")
-                                .messageAlreadyExists(false)
-                                .build();
+                final MigrationStatus status = new MigrationStatus("<id-3>", null, false, false, false);
 
-                when(migrationService.findByMessageId("<id-3>")).thenReturn(Optional.of(entity));
+                when(migrationService.findByMessageId("<id-3>")).thenReturn(Optional.of(status));
 
                 synchronizer.synchronize(List.of(header));
 
@@ -85,12 +82,9 @@ class GmailHeaderSynchronizerTest {
         @Test
         void synchronizeSkipsUpdatingFlagWhenAlreadySet() {
                 final EmailHeader header = new EmailHeader(4, "<id-4>", null, "Dana");
-                final MigrationEntity entity = MigrationEntity.builder()
-                                .messageId("<id-4>")
-                                .messageAlreadyExists(true)
-                                .build();
+                final MigrationStatus status = new MigrationStatus("<id-4>", null, false, true, false);
 
-                when(migrationService.findByMessageId("<id-4>")).thenReturn(Optional.of(entity));
+                when(migrationService.findByMessageId("<id-4>")).thenReturn(Optional.of(status));
 
                 synchronizer.synchronize(List.of(header));
 

@@ -25,9 +25,9 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.github.sigmalko.pmetg.migrations.MigrationEntity;
 import com.github.sigmalko.pmetg.migrations.MigrationService;
 import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+import com.github.sigmalko.pmetg.migrations.MigrationRepository.MigrationStatus;
 import com.github.sigmalko.pmetg.problems.ProblemService;
 
 @Slf4j(topic = "EmlEmailLoggingRunner")
@@ -172,12 +172,12 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
         }
     }
 
-    private void markMessageAsStoredInFile(MigrationEntity entity) {
-        if (entity.isMessageInFile()) {
+    private void markMessageAsStoredInFile(MigrationStatus status) {
+        if (status.messageInFile()) {
             return;
         }
 
         migrationService.updateFlagByMessageId(
-                entity.getMessageId(), MigrationFlag.MESSAGE_IN_FILE, true);
+                status.messageId(), MigrationFlag.MESSAGE_IN_FILE, true);
     }
 }
