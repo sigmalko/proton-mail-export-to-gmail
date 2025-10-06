@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Properties;
 import java.util.UUID;
 
 import jakarta.mail.Flags;
@@ -32,20 +31,21 @@ public class GmailFakeMessageGenerator {
                         .withZone(ZoneId.systemDefault());
 
         private final GmailImapProperties properties;
+        private final GmailImapClientSupport clientSupport;
 
         public void appendFakeMessage() {
-                if (!hasCredentials()) {
+                if (!clientSupport.hasCredentials()) {
                         log.warn("Gmail IMAP credentials are not configured; skipping fake message append.");
                         return;
                 }
 
-                final var session = Session.getInstance(buildMailProperties());
+                final var session = clientSupport.createSession();
 
                 Store store = null;
                 Folder exportedFolder = null;
 
                 try {
-                        store = session.getStore(resolveProtocol());
+                        store = session.getStore(clientSupport.resolveProtocol());
                         log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(),
                                         properties.sslEnabled());
                         store.connect(properties.host(), properties.port(), properties.username(), properties.password());
@@ -59,8 +59,8 @@ public class GmailFakeMessageGenerator {
                 } catch (MessagingException exception) {
                         log.error("Failed to append fake Gmail message.", exception);
                 } finally {
-                        closeFolder(exportedFolder);
-                        closeStore(store);
+                        clientSupport.closeFolder(exportedFolder);
+                        clientSupport.closeStore(store);
                 }
         }
 
@@ -140,44 +140,4 @@ public class GmailFakeMessageGenerator {
                 }
         }
 
-        private void closeFolder(Folder folder) {
-                if (folder != null && folder.isOpen()) {
-                        try {
-                                folder.close(false);
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to close folder cleanly.", exception);
-                        }
-                }
-        }
-
-        private void closeStore(Store store) {
-                if (store != null && store.isConnected()) {
-                        try {
-                                store.close();
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to close store cleanly.", exception);
-                        }
-                }
-        }
-
-        private Properties buildMailProperties() {
-                final var props = new Properties();
-                final var protocol = resolveProtocol();
-                props.put("mail.store.protocol", protocol);
-                props.put("mail.imap.host", properties.host());
-                props.put("mail.imap.port", Integer.toString(properties.port()));
-                props.put("mail.imap.ssl.enable", Boolean.toString(properties.sslEnabled()));
-                props.put("mail.imaps.host", properties.host());
-                props.put("mail.imaps.port", Integer.toString(properties.port()));
-                props.put("mail.imaps.ssl.enable", Boolean.toString(properties.sslEnabled()));
-                return props;
-        }
-
-        private String resolveProtocol() {
-                return properties.sslEnabled() ? "imaps" : "imap";
-        }
-
-        private boolean hasCredentials() {
-                return StringUtils.hasText(properties.username()) && StringUtils.hasText(properties.password());
-        }
 }
