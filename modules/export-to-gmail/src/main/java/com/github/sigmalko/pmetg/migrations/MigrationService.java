@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,16 +18,13 @@ public class MigrationService {
     private final MigrationRepository migrationRepository;
 
     @Transactional
-    public MigrationEntity createMigration(
-            String messageId, OffsetDateTime messageDate, boolean messageInFile) {
-        MigrationEntity entity = MigrationEntity.builder()
-                .messageId(messageId)
-                .messageDate(messageDate)
-                .messageInFile(messageInFile)
-                .build();
-        MigrationEntity saved = migrationRepository.save(entity);
-        log.debug("Created migration entry with id={} for messageId={}", saved.getId(), messageId);
-        return saved;
+    public MigrationEntity createFileMigration(String messageId, OffsetDateTime messageDate) {
+        return createMigration(messageId, messageDate, builder -> builder.messageInFile(true));
+    }
+
+    @Transactional
+    public MigrationEntity createGmailMigration(String messageId, OffsetDateTime messageDate) {
+        return createMigration(messageId, messageDate, builder -> builder.messageAlreadyExists(true));
     }
 
     @Transactional
@@ -66,6 +64,24 @@ public class MigrationService {
             case MESSAGE_ALREADY_EXISTS -> entity.setMessageAlreadyExists(value);
             case MESSAGE_EXPORTED -> entity.setMessageExported(value);
         }
+    }
+
+    private MigrationEntity createMigration(
+            String messageId,
+            OffsetDateTime messageDate,
+            Consumer<MigrationEntity.MigrationEntityBuilder> builderCustomizer) {
+        MigrationEntity.MigrationEntityBuilder builder = MigrationEntity.builder()
+                .messageId(messageId)
+                .messageDate(messageDate);
+        builderCustomizer.accept(builder);
+        MigrationEntity saved = migrationRepository.save(builder.build());
+        log.debug(
+                "Created migration entry with id={} for messageId={} (messageInFile={}, messageAlreadyExists={})",
+                saved.getId(),
+                messageId,
+                saved.isMessageInFile(),
+                saved.isMessageAlreadyExists());
+        return saved;
     }
 
     public enum MigrationFlag {

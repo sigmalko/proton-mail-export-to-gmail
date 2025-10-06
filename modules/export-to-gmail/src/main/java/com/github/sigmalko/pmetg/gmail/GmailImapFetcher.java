@@ -149,11 +149,7 @@ public class GmailImapFetcher {
                                 if (existing.isPresent()) {
                                         markMessageAsExisting(existing.get());
                                 } else {
-                                        migrationService.createMigration(header.messageId(), messageDate, false);
-                                        migrationService.updateFlagByMessageId(
-                                                        header.messageId(),
-                                                        MigrationFlag.MESSAGE_ALREADY_EXISTS,
-                                                        true);
+                                        migrationService.createGmailMigration(header.messageId(), messageDate);
                                 }
                         } catch (Exception exception) {
                                 log.warn(
