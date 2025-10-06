@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import com.github.sigmalko.protonmail.export.web.filter.CORSFilter;
-
 @Configuration
 public class WebInfrastructureConfig {
 
@@ -23,13 +21,6 @@ public class WebInfrastructureConfig {
 
         final var registrationBean = new FilterRegistrationBean<>(filter);
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-        return registrationBean;
-    }
-
-    @Bean
-    FilterRegistrationBean<CORSFilter> corsFilterRegistration(CORSFilter corsFilter) {
-        final var registrationBean = new FilterRegistrationBean<>(corsFilter);
-        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
     }
 
