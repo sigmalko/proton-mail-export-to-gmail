@@ -11,7 +11,6 @@ import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.Store;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -41,26 +40,14 @@ public class GmailFakeMessageGenerator {
 
                 final var session = clientSupport.createSession();
 
-                Store store = null;
-                Folder exportedFolder = null;
-
-                try {
-                        store = session.getStore(clientSupport.resolveProtocol());
-                        log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(),
-                                        properties.sslEnabled());
-                        store.connect(properties.host(), properties.port(), properties.username(), properties.password());
-                        log.info("store.isConnected(): {}", store.isConnected());
-
-                        exportedFolder = resolveExportedFolder(store);
+                try (var folderSession = clientSupport.openFolder(TARGET_FOLDER, Folder.READ_WRITE)) {
+                        final var exportedFolder = folderSession.folder();
                         final var message = buildFakeMessage(session);
 
                         appendToFolder(exportedFolder, message);
                         log.info("Fake message appended to folder '{}' successfully.", exportedFolder.getFullName());
                 } catch (MessagingException exception) {
                         log.error("Failed to append fake Gmail message.", exception);
-                } finally {
-                        clientSupport.closeFolder(exportedFolder);
-                        clientSupport.closeStore(store);
                 }
         }
 
@@ -86,22 +73,6 @@ public class GmailFakeMessageGenerator {
 
                 message.saveChanges();
                 return message;
-        }
-
-        private Folder resolveExportedFolder(Store store) throws MessagingException {
-                final var rootFolder = store.getDefaultFolder();
-                if (rootFolder == null) {
-                        throw new MessagingException("Gmail default folder is null. Unable to resolve target folder.");
-                }
-
-                final var exported = rootFolder.getFolder(TARGET_FOLDER);
-                if (!exported.exists()) {
-                        log.info("Target folder '{}' does not exist. Creating it now...", TARGET_FOLDER);
-                        exported.create(Folder.HOLDS_MESSAGES);
-                }
-
-                exported.open(Folder.READ_WRITE);
-                return exported;
         }
 
         private void appendToFolder(Folder folder, MimeMessage message) throws MessagingException {
