@@ -64,5 +64,5 @@
 		}
 	},	
 //	"postCreateCommand": "sudo chown -R vscode:vscode /workspace"
-  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh"
+  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && mkdir -p /tmp/h2db && mkdir -p /tmp/emls"
 }
