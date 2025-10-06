@@ -22,29 +22,38 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (handler instanceof HandlerMethod handlerMethod) {
-            Method method = handlerMethod.getMethod();
-            if (method.isAnnotationPresent(GetMapping.class) || method.isAnnotationPresent(PostMapping.class)) {
-                String apiKey = request.getHeader(ApiKeyContext.HEADER_NAME);
-                apiKeyContext.setApiKey(apiKey);
-                openAiHeadersContext.setEphemeralUserId(
-                        request.getHeader(OpenAiHeadersContext.EPHEMERAL_USER_ID_HEADER)
-                );
-                openAiHeadersContext.setConversationId(
-                        request.getHeader(OpenAiHeadersContext.CONVERSATION_ID_HEADER)
-                );
-                openAiHeadersContext.setGptId(request.getHeader(OpenAiHeadersContext.GPT_ID_HEADER));
-                log.debug(
-                        "Captured metadata for {} {} apiKeyPresent={} ephemeralUserIdPresent={} conversationIdPresent={} gptIdPresent={}",
-                        request.getMethod(),
-                        request.getRequestURI(),
-                        apiKey != null && !apiKey.isBlank(),
-                        openAiHeadersContext.ephemeralUserId().isPresent(),
-                        openAiHeadersContext.conversationId().isPresent(),
-                        openAiHeadersContext.gptId().isPresent()
-                );
+        return switch (handler) {
+            case HandlerMethod handlerMethod when isMappedEndpoint(handlerMethod) -> {
+                captureRequestMetadata(request);
+                yield true;
             }
-        }
-        return true;
+            default -> true;
+        };
+    }
+
+    private boolean isMappedEndpoint(HandlerMethod handlerMethod) {
+        Method method = handlerMethod.getMethod();
+        return method.isAnnotationPresent(GetMapping.class) || method.isAnnotationPresent(PostMapping.class);
+    }
+
+    private void captureRequestMetadata(HttpServletRequest request) {
+        String apiKey = request.getHeader(ApiKeyContext.HEADER_NAME);
+        apiKeyContext.setApiKey(apiKey);
+        openAiHeadersContext.setEphemeralUserId(
+                request.getHeader(OpenAiHeadersContext.EPHEMERAL_USER_ID_HEADER)
+        );
+        openAiHeadersContext.setConversationId(
+                request.getHeader(OpenAiHeadersContext.CONVERSATION_ID_HEADER)
+        );
+        openAiHeadersContext.setGptId(request.getHeader(OpenAiHeadersContext.GPT_ID_HEADER));
+        log.debug(
+                "Captured metadata for {} {} apiKeyPresent={} ephemeralUserIdPresent={} conversationIdPresent={} gptIdPresent={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                apiKey != null && !apiKey.isBlank(),
+                openAiHeadersContext.ephemeralUserId().isPresent(),
+                openAiHeadersContext.conversationId().isPresent(),
+                openAiHeadersContext.gptId().isPresent()
+        );
     }
 }
