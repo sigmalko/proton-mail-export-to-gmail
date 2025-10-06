@@ -1,29 +1,18 @@
 package com.github.sigmalko.pmetg.gmail;
 
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-import jakarta.mail.Address;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Store;
-import jakarta.mail.internet.InternetAddress;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import com.github.sigmalko.pmetg.migrations.MigrationEntity;
-import com.github.sigmalko.pmetg.migrations.MigrationService;
-import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
-import com.github.sigmalko.pmetg.problems.ProblemService;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -37,8 +26,8 @@ public class GmailImapFetcher {
 
         private final GmailImapProperties properties;
         private final GmailImapClientSupport clientSupport;
-        private final MigrationService migrationService;
-        private final ProblemService problemService;
+        private final GmailEmailHeaderMapper mapper;
+        private final GmailHeaderSynchronizer headerSynchronizer;
 
         public List<EmailHeader> fetchLatestHeaders() {
                 if (!clientSupport.hasCredentials()) {
@@ -93,8 +82,11 @@ public class GmailImapFetcher {
                         final Message[] messages = inbox.getMessages(start, end);
                         fetchEnvelopeOnly(inbox, messages);
 
-                        final var headers = extractHeaders(messages);
-                        storeHeaders(headers);
+                        final var headers = Arrays.stream(messages)
+                                        .<EmailHeader>mapMulti(mapper::map)
+                                        .sorted(Comparator.comparingInt(EmailHeader::messageNumber).reversed())
+                                        .toList();
+                        headerSynchronizer.synchronize(headers);
                         headers.forEach(this::logHeader);
                         return headers;
                 } catch (MessagingException exception) {
@@ -110,99 +102,6 @@ public class GmailImapFetcher {
                 final var fetchProfile = new FetchProfile();
                 fetchProfile.add(FetchProfile.Item.ENVELOPE);
                 inbox.fetch(messages, fetchProfile);
-        }
-
-        private List<EmailHeader> extractHeaders(Message[] messages) {
-                final var headers = new ArrayList<EmailHeader>(messages.length);
-
-                for (Message message : messages) {
-                        final int messageNumber = message.getMessageNumber();
-                        try {
-                                headers.add(new EmailHeader(
-                                                messageNumber,
-                                                firstHeaderValue(message, "Message-ID"),
-                                                message.getSentDate() != null ? message.getSentDate().toInstant() : null,
-                                                formatAddresses(message.getFrom())));
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to extract headers for message {}.", messageNumber, exception);
-                        }
-                }
-
-                headers.sort(Comparator.comparingInt(EmailHeader::messageNumber).reversed());
-                return headers;
-        }
-
-        private void storeHeaders(List<EmailHeader> headers) {
-                for (EmailHeader header : headers) {
-                        final OffsetDateTime messageDate = header.sentAt() != null
-                                        ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
-                                        : null;
-
-                        try {
-                                if (!StringUtils.hasText(header.messageId())) {
-                                        log.debug(
-                                                        "Skipping Gmail message {} because it does not contain Message-ID header.",
-                                                        header.messageNumber());
-                                        problemService.logRemoteProblem(
-                                                        messageDate,
-                                                        header.from(),
-                                                        "Missing Message-ID header for Gmail message number "
-                                                                        + header.messageNumber());
-                                        continue;
-                                }
-
-                                final var existing = migrationService.findByMessageId(header.messageId());
-                                if (existing.isPresent()) {
-                                        markMessageAsExisting(existing.get());
-                                } else {
-                                        migrationService.createGmailMigration(header.messageId(), messageDate);
-                                }
-                        } catch (Exception exception) {
-                                if (!StringUtils.hasText(header.messageId())) {
-                                        log.warn(
-                                                        "Failed to log missing Message-ID problem for Gmail message {}.",
-                                                        header.messageNumber(),
-                                                        exception);
-                                        continue;
-                                }
-
-                                log.warn(
-                                                "Failed to persist Gmail message {} (messageId={}).",
-                                                header.messageNumber(),
-                                                header.messageId(),
-                                                exception);
-                        }
-                }
-        }
-
-        private void markMessageAsExisting(MigrationEntity entity) {
-                if (entity.isMessageAlreadyExists()) {
-                        return;
-                }
-
-                migrationService.updateFlagByMessageId(
-                                entity.getMessageId(), MigrationFlag.MESSAGE_ALREADY_EXISTS, true);
-        }
-
-        private String formatAddresses(Address[] addresses) {
-                if (addresses == null || addresses.length == 0) {
-                        return "";
-                }
-
-                return Arrays.stream(addresses)
-                                .map(address -> address instanceof InternetAddress internetAddress
-                                                ? internetAddress.toUnicodeString()
-                                                : address.toString())
-                                .collect(Collectors.joining(", "));
-        }
-
-        private String firstHeaderValue(Message message, String headerName) throws MessagingException {
-                final var headerValues = message.getHeader(headerName);
-                if (headerValues == null || headerValues.length == 0) {
-                        return null;
-                }
-
-                return headerValues[0];
         }
 
         private void logHeader(EmailHeader header) {
