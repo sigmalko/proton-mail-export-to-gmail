@@ -2,7 +2,7 @@ name: export-to-gmail
 run-name: ${{ github.workflow }} - ${{ github.event.head_commit.message }}
 
 on:
-
+ 
   push:
     branches:
       - main
