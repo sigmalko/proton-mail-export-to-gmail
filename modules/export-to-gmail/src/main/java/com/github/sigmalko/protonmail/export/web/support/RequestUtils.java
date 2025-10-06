@@ -1,13 +1,20 @@
 package com.github.sigmalko.protonmail.export.web.support;
 
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class RequestUtils {
+
+    private static final List<String> CLIENT_IP_HEADERS = List.of("x-real-ip", "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP");
 
     private RequestUtils() {
     }
@@ -29,21 +36,17 @@ public final class RequestUtils {
     }
 
     public static String getClientIp(HttpServletRequest request) {
-        String ipAddress = request.getHeader("x-real-ip");
-        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-            ipAddress = request.getHeader("X-Forwarded-For");
-        }
-        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-            ipAddress = request.getHeader("Proxy-Client-IP");
-        }
-        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-            ipAddress = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-            ipAddress = request.getRemoteAddr();
-        }
-        return ipAddress;
+        return Stream.concat(
+                        CLIENT_IP_HEADERS.stream().map(request::getHeader),
+                        Stream.of(request.getRemoteAddr()))
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(Predicate.not(String::isEmpty))
+                .filter(Predicate.not(ip -> "unknown".equalsIgnoreCase(ip)))
+                .findFirst()
+                .orElse(null);
     }
+
     public static boolean isAndroid(final HttpServletRequest request) {
         try {
             return headerContainsIgnoreCase(request, "User-Agent", "android")
@@ -77,19 +80,15 @@ public final class RequestUtils {
             return false;
         }
 
-        final String headerValue = request.getHeader(header);
-        if (headerValue == null || headerValue.isEmpty()) {
-            return false;
-        }
-
-        final String headerLowerCase = headerValue.toLowerCase(Locale.ROOT);
-        for (String fragment : fragments) {
-            if (fragment != null && !fragment.isEmpty()) {
-                if (headerLowerCase.contains(fragment.toLowerCase(Locale.ROOT))) {
-                    return true;
-                }
+        return switch (request.getHeader(header)) {
+            case null, String s when s.isBlank() -> false;
+            case String headerValue -> {
+                final String normalizedHeader = headerValue.toLowerCase(Locale.ROOT);
+                yield Arrays.stream(fragments)
+                        .filter(Objects::nonNull)
+                        .map(fragment -> fragment.toLowerCase(Locale.ROOT))
+                        .anyMatch(normalizedHeader::contains);
             }
-        }
-        return false;
+        };
     }
 }
