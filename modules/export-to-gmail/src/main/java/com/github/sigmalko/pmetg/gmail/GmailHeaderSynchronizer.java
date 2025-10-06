@@ -1,8 +1,8 @@
 package com.github.sigmalko.pmetg.gmail;
 
-import com.github.sigmalko.pmetg.migrations.MigrationEntity;
 import com.github.sigmalko.pmetg.migrations.MigrationService;
 import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+import com.github.sigmalko.pmetg.migrations.MigrationRepository.MigrationStatus;
 import com.github.sigmalko.pmetg.problems.ProblemService;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -65,12 +65,12 @@ public class GmailHeaderSynchronizer {
                 }
         }
 
-        private void markMessageAsExisting(MigrationEntity entity) {
-                if (entity.isMessageAlreadyExists()) {
+        private void markMessageAsExisting(MigrationStatus status) {
+                if (status.messageAlreadyExists()) {
                         return;
                 }
 
                 migrationService.updateFlagByMessageId(
-                                entity.getMessageId(), MigrationFlag.MESSAGE_ALREADY_EXISTS, true);
+                                status.messageId(), MigrationFlag.MESSAGE_ALREADY_EXISTS, true);
         }
 }

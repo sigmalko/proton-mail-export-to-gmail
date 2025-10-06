@@ -28,42 +28,34 @@ public class MigrationService {
     }
 
     @Transactional
-    public MigrationEntity updateFlagByMessageId(String messageId, MigrationFlag flag, boolean value) {
-        MigrationEntity entity = migrationRepository.findByMessageId(messageId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Migration entry not found for messageId=" + messageId));
-        applyFlag(entity, flag, value);
-        MigrationEntity saved = migrationRepository.save(entity);
-        log.debug(
-                "Updated {} flag to {} for messageId={} (id={})",
-                flag,
-                value,
-                saved.getMessageId(),
-                saved.getId());
-        return saved;
+    public void updateFlagByMessageId(String messageId, MigrationFlag flag, boolean value) {
+        int updatedRows = switch (flag) {
+            case MESSAGE_IN_FILE -> migrationRepository.updateMessageInFileByMessageId(messageId, value);
+            case MESSAGE_ALREADY_EXISTS ->
+                    migrationRepository.updateMessageAlreadyExistsByMessageId(messageId, value);
+            case MESSAGE_EXPORTED -> migrationRepository.updateMessageExportedByMessageId(messageId, value);
+        };
+
+        if (updatedRows == 0) {
+            throw new EntityNotFoundException("Migration entry not found for messageId=" + messageId);
+        }
+
+        log.debug("Updated {} flag to {} for messageId={} (affectedRows={})", flag, value, messageId, updatedRows);
     }
 
     @Transactional(readOnly = true)
-    public Optional<MigrationEntity> findByMessageId(String messageId) {
+    public Optional<MigrationRepository.MigrationStatus> findByMessageId(String messageId) {
         return migrationRepository.findByMessageId(messageId);
     }
 
     @Transactional(readOnly = true)
-    public List<MigrationEntity> findMessagesNotExistingInGmail() {
+    public List<MigrationRepository.MigrationStatus> findMessagesNotExistingInGmail() {
         return migrationRepository.findAllByMessageAlreadyExistsFalse();
     }
 
     @Transactional(readOnly = true)
-    public List<MigrationEntity> findMessagesNotExported() {
+    public List<MigrationRepository.MigrationStatus> findMessagesNotExported() {
         return migrationRepository.findAllByMessageExportedFalse();
-    }
-
-    private void applyFlag(MigrationEntity entity, MigrationFlag flag, boolean value) {
-        switch (flag) {
-            case MESSAGE_IN_FILE -> entity.setMessageInFile(value);
-            case MESSAGE_ALREADY_EXISTS -> entity.setMessageAlreadyExists(value);
-            case MESSAGE_EXPORTED -> entity.setMessageExported(value);
-        }
     }
 
     private MigrationEntity createMigration(
