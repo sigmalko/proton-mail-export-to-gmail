@@ -1,6 +1,8 @@
 package com.github.sigmalko.pmetg.gmail;
 
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,10 @@ import jakarta.mail.internet.InternetAddress;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.github.sigmalko.pmetg.migrations.MigrationEntity;
+import com.github.sigmalko.pmetg.migrations.MigrationService;
+import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +37,7 @@ public class GmailImapFetcher {
         private static final DateTimeFormatter HEADER_DATE_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME;
 
         private final GmailImapProperties properties;
+        private final MigrationService migrationService;
 
         public List<EmailHeader> fetchLatestHeaders() {
                 if (!hasCredentials()) {
@@ -86,6 +93,7 @@ public class GmailImapFetcher {
                         fetchEnvelopeOnly(inbox, messages);
 
                         final var headers = extractHeaders(messages);
+                        storeHeaders(headers);
                         headers.forEach(this::logHeader);
                         return headers;
                 } catch (MessagingException exception) {
@@ -121,6 +129,49 @@ public class GmailImapFetcher {
 
                 headers.sort(Comparator.comparingInt(EmailHeader::messageNumber).reversed());
                 return headers;
+        }
+
+        private void storeHeaders(List<EmailHeader> headers) {
+                for (EmailHeader header : headers) {
+                        if (!StringUtils.hasText(header.messageId())) {
+                                log.debug(
+                                                "Skipping Gmail message {} because it does not contain Message-ID header.",
+                                                header.messageNumber());
+                                continue;
+                        }
+
+                        final OffsetDateTime messageDate = header.sentAt() != null
+                                        ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
+                                        : null;
+
+                        try {
+                                final var existing = migrationService.findByMessageId(header.messageId());
+                                if (existing.isPresent()) {
+                                        markMessageAsExisting(existing.get());
+                                } else {
+                                        migrationService.createMigration(header.messageId(), messageDate, false);
+                                        migrationService.updateFlagByMessageId(
+                                                        header.messageId(),
+                                                        MigrationFlag.MESSAGE_ALREADY_EXISTS,
+                                                        true);
+                                }
+                        } catch (Exception exception) {
+                                log.warn(
+                                                "Failed to persist Gmail message {} (messageId={}).",
+                                                header.messageNumber(),
+                                                header.messageId(),
+                                                exception);
+                        }
+                }
+        }
+
+        private void markMessageAsExisting(MigrationEntity entity) {
+                if (entity.isMessageAlreadyExists()) {
+                        return;
+                }
+
+                migrationService.updateFlagByMessageId(
+                                entity.getMessageId(), MigrationFlag.MESSAGE_ALREADY_EXISTS, true);
         }
 
         private String formatAddresses(Address[] addresses) {
