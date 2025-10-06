@@ -2,6 +2,7 @@ package com.github.sigmalko.pmetg.gmail;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -44,7 +45,8 @@ public class GmailImapFetcher {
                         log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(), properties.sslEnabled());
                         store.connect(properties.host(), properties.port(), properties.username(), properties.password());
                         log.info("store.isConnected(): {}", store.isConnected());
-                        logFolderTopology(store);
+                        final var readableFolders = logFolderTopology(store);
+                        logReadableFolders(readableFolders);
                         
                         final var FOLDER_NAME = "Proton";
                         // final var FOLDER_NAME = "INBOX";
@@ -114,22 +116,49 @@ public class GmailImapFetcher {
                 log.info("{};;{};{};{}", header.messageNumber(), messageId, formattedDate, from);
         }
 
-        private void logFolderTopology(Store store) {
+        public List<String> fetchReadableFolders() {
+                if (!clientSupport.hasCredentials()) {
+                        log.warn("Gmail IMAP credentials are not configured; skipping folder discovery.");
+                        return List.of();
+                }
+
+                final var session = clientSupport.createSession();
+                Store store = null;
+
+                try {
+                        store = session.getStore(clientSupport.resolveProtocol());
+                        log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(), properties.sslEnabled());
+                        store.connect(properties.host(), properties.port(), properties.username(), properties.password());
+                        log.info("store.isConnected(): {}", store.isConnected());
+
+                        final var readableFolders = logFolderTopology(store);
+                        logReadableFolders(readableFolders);
+                        return readableFolders;
+                } catch (MessagingException exception) {
+                        log.warn("Failed to discover Gmail folders.", exception);
+                        return List.of();
+                } finally {
+                        clientSupport.closeStore(store);
+                }
+        }
+
+        private List<String> logFolderTopology(Store store) {
                 try {
                         final var defaultFolder = store.getDefaultFolder();
                         if (defaultFolder == null) {
                                 log.warn("Unable to log Gmail folder topology because the default folder is null.");
-                                return;
+                                return List.of();
                         }
 
                         log.info("Gmail folder topology:");
-                        logFolderRecursively(defaultFolder, 0);
+                        return logFolderRecursively(defaultFolder, 0);
                 } catch (MessagingException exception) {
                         log.warn("Failed to log Gmail folder topology.", exception);
+                        return List.of();
                 }
         }
 
-        private void logFolderRecursively(Folder folder, int depth) throws MessagingException {
+        private List<String> logFolderRecursively(Folder folder, int depth) throws MessagingException {
                 final var indent = "  ".repeat(depth);
                 final var folderName = resolveFolderDisplayName(folder);
 
@@ -153,17 +182,33 @@ public class GmailImapFetcher {
 
                 log.info("{}- {} (messages: {})", indent, folderName, messageCountDescription);
 
+                final var readableFolders = new ArrayList<String>();
+                if (holdsMessages) {
+                        readableFolders.add(folderName);
+                }
+
                 if ((folderType & Folder.HOLDS_FOLDERS) == 0) {
-                        return;
+                        return readableFolders;
                 }
 
                 try {
                         for (Folder child : folder.list()) {
-                                logFolderRecursively(child, depth + 1);
+                                readableFolders.addAll(logFolderRecursively(child, depth + 1));
                         }
                 } catch (MessagingException exception) {
                         log.warn("Failed to enumerate children for folder {}.", folderName, exception);
                 }
+
+                return readableFolders;
+        }
+
+        private void logReadableFolders(List<String> folders) {
+                if (folders.isEmpty()) {
+                        log.info("No readable Gmail folders were discovered.");
+                        return;
+                }
+
+                log.info("Readable Gmail folders: {}", String.join(", ", folders));
         }
 
         private String resolveFolderDisplayName(Folder folder) {
