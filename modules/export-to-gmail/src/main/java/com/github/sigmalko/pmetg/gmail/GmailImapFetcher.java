@@ -8,14 +8,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import jakarta.mail.Address;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
-import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.internet.InternetAddress;
 
@@ -38,21 +36,22 @@ public class GmailImapFetcher {
         private static final DateTimeFormatter HEADER_DATE_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME;
 
         private final GmailImapProperties properties;
+        private final GmailImapClientSupport clientSupport;
         private final MigrationService migrationService;
         private final ProblemService problemService;
 
         public List<EmailHeader> fetchLatestHeaders() {
-                if (!hasCredentials()) {
+                if (!clientSupport.hasCredentials()) {
                         log.warn("Gmail IMAP credentials are not configured; skipping header fetch.");
                         return List.of();
                 }
 
-                final var session = Session.getInstance(buildMailProperties());
+                final var session = clientSupport.createSession();
                 Store store = null;
                 Folder inbox = null;
 
                 try {
-                        store = session.getStore(resolveProtocol());
+                        store = session.getStore(clientSupport.resolveProtocol());
                         log.info("Connecting to Gmail IMAP server {}:{} using SSL: {}", properties.host(), properties.port(), properties.sslEnabled());
                         store.connect(properties.host(), properties.port(), properties.username(), properties.password());
                         log.info("store.isConnected(): {}", store.isConnected());
@@ -102,8 +101,8 @@ public class GmailImapFetcher {
                         log.error("Failed to fetch Gmail message headers.", exception);
                         return List.of();
                 } finally {
-                        closeFolder(inbox);
-                        closeStore(store);
+                        clientSupport.closeFolder(inbox);
+                        clientSupport.closeStore(store);
                 }
         }
 
@@ -282,44 +281,4 @@ public class GmailImapFetcher {
                 return "(root)";
         }
 
-        private boolean hasCredentials() {
-                return StringUtils.hasText(properties.username()) && StringUtils.hasText(properties.password());
-        }
-
-        private Properties buildMailProperties() {
-                final var props = new Properties();
-                final var protocol = resolveProtocol();
-                props.put("mail.store.protocol", protocol);
-                props.put("mail.imap.host", properties.host());
-                props.put("mail.imap.port", Integer.toString(properties.port()));
-                props.put("mail.imap.ssl.enable", Boolean.toString(properties.sslEnabled()));
-                props.put("mail.imaps.host", properties.host());
-                props.put("mail.imaps.port", Integer.toString(properties.port()));
-                props.put("mail.imaps.ssl.enable", Boolean.toString(properties.sslEnabled()));
-                return props;
-        }
-
-        private String resolveProtocol() {
-                return properties.sslEnabled() ? "imaps" : "imap";
-        }
-
-        private void closeFolder(Folder folder) {
-                if (folder != null && folder.isOpen()) {
-                        try {
-                                folder.close(false);
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to close IMAP folder cleanly.", exception);
-                        }
-                }
-        }
-
-        private void closeStore(Store store) {
-                if (store != null && store.isConnected()) {
-                        try {
-                                store.close();
-                        } catch (MessagingException exception) {
-                                log.warn("Failed to close IMAP store cleanly.", exception);
-                        }
-                }
-        }
 }
