@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.github.sigmalko.pmetg.migrations.MigrationEntity;
 import com.github.sigmalko.pmetg.migrations.MigrationService;
 import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+import com.github.sigmalko.pmetg.problems.ProblemService;
 
 @Slf4j(topic = "EmlEmailLoggingRunner")
 @Component
@@ -40,6 +41,7 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
 
     private final EmlReaderProperties properties;
     private final MigrationService migrationService;
+    private final ProblemService problemService;
 
     @Override
     public void run(String... args) {
@@ -123,14 +125,19 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
             final String messageId = readHeader(message, "Message-ID");
             final String from = readHeader(message, "From");
             final String date = readHeader(message, "Date");
+            final OffsetDateTime messageDate = extractMessageDate(message);
 
             log.info("Message-ID={}, From={}, Date={}", messageId, from, date);
             if (!StringUtils.hasText(messageId)) {
                 log.debug("Skipping EML file {} because it does not contain Message-ID header.", file);
+                problemService.logFileProblem(
+                        file.getFileName().toString(),
+                        messageDate,
+                        from,
+                        "Missing Message-ID header in EML file " + file);
                 return;
             }
 
-            final OffsetDateTime messageDate = extractMessageDate(message);
             storeMigrationEntry(messageId, messageDate);
         } catch (MessagingException | IOException exception) {
             log.error("Failed to process EML file: {}", file, exception);
