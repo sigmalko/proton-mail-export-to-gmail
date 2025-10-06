@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.github.sigmalko.pmetg.migrations.MigrationEntity;
 import com.github.sigmalko.pmetg.migrations.MigrationService;
 import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
+import com.github.sigmalko.pmetg.problems.ProblemService;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -38,6 +39,7 @@ public class GmailImapFetcher {
 
         private final GmailImapProperties properties;
         private final MigrationService migrationService;
+        private final ProblemService problemService;
 
         public List<EmailHeader> fetchLatestHeaders() {
                 if (!hasCredentials()) {
@@ -133,16 +135,21 @@ public class GmailImapFetcher {
 
         private void storeHeaders(List<EmailHeader> headers) {
                 for (EmailHeader header : headers) {
+                        final OffsetDateTime messageDate = header.sentAt() != null
+                                        ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
+                                        : null;
+
                         if (!StringUtils.hasText(header.messageId())) {
                                 log.debug(
                                                 "Skipping Gmail message {} because it does not contain Message-ID header.",
                                                 header.messageNumber());
+                                problemService.logRemoteProblem(
+                                                messageDate,
+                                                header.from(),
+                                                "Missing Message-ID header for Gmail message number "
+                                                                + header.messageNumber());
                                 continue;
                         }
-
-                        final OffsetDateTime messageDate = header.sentAt() != null
-                                        ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
-                                        : null;
 
                         try {
                                 final var existing = migrationService.findByMessageId(header.messageId());
