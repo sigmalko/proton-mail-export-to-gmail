@@ -1,25 +1,33 @@
 package com.github.sigmalko.pmetg.eml;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Objects;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import com.github.sigmalko.pmetg.migrations.MigrationEntity;
+import com.github.sigmalko.pmetg.migrations.MigrationService;
+import com.github.sigmalko.pmetg.migrations.MigrationService.MigrationFlag;
 
 @Slf4j(topic = "EmlEmailLoggingRunner")
 @Component
@@ -28,8 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 public class EmlEmailLoggingRunner implements CommandLineRunner {
 
     private static final Session MAIL_SESSION = Session.getInstance(new Properties());
+    private static final int BATCH_SIZE = 1_000;
 
     private final EmlReaderProperties properties;
+    private final MigrationService migrationService;
 
     @Override
     public void run(String... args) {
@@ -79,29 +89,49 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
     }
 
     private void processDirectory(Path directory) {
-        try (Stream<Path> files = Files.list(directory)) {
-            files.filter(Files::isRegularFile)
-                    .filter(this::isEmlFile)
-                    .sorted()
-                    .forEach(this::logHeadersFromFile);
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(directory, "*.eml")) {
+            final List<Path> batch = new ArrayList<>(BATCH_SIZE);
+            for (Path file : files) {
+                if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
+                    continue;
+                }
+
+                batch.add(file);
+                if (batch.size() >= BATCH_SIZE) {
+                    processBatch(batch);
+                    batch.clear();
+                }
+            }
+
+            if (!batch.isEmpty()) {
+                processBatch(batch);
+            }
         } catch (IOException exception) {
             log.error("Failed to read EML files from directory: {}", directory, exception);
         }
     }
 
-    private boolean isEmlFile(Path file) {
-        final var filename = Objects.toString(file.getFileName(), "");
-        return filename.toLowerCase(Locale.ROOT).endsWith(".eml");
+    private void processBatch(List<Path> batch) {
+        for (Path file : batch) {
+            processFile(file);
+        }
     }
 
-    private void logHeadersFromFile(Path file) {
-        try (var inputStream = Files.newInputStream(file)) {
-            final var message = new MimeMessage(MAIL_SESSION, inputStream);
-            final var messageId = readHeader(message, "Message-ID");
-            final var from = readHeader(message, "From");
-            final var date = readHeader(message, "Date");
+    private void processFile(Path file) {
+        try (InputStream inputStream = Files.newInputStream(file)) {
+            final MimeMessage message = new MimeMessage(MAIL_SESSION, inputStream);
+            final String messageId = readHeader(message, "Message-ID");
+            final String from = readHeader(message, "From");
+            final String date = readHeader(message, "Date");
 
             log.info("Message-ID={}, From={}, Date={}", messageId, from, date);
+            if (!StringUtils.hasText(messageId)) {
+                log.debug("Skipping EML file {} because it does not contain Message-ID header.", file);
+                return;
+            }
+
+            final OffsetDateTime messageDate = extractMessageDate(message);
+            storeMigrationEntry(messageId, messageDate);
         } catch (MessagingException | IOException exception) {
             log.error("Failed to process EML file: {}", file, exception);
         }
@@ -110,5 +140,37 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
     private String readHeader(MimeMessage message, String headerName) throws MessagingException {
         final var header = message.getHeader(headerName, ", ");
         return header != null ? header.strip() : "";
+    }
+
+    private OffsetDateTime extractMessageDate(MimeMessage message) throws MessagingException {
+        final var sentDate = message.getSentDate();
+        if (sentDate == null) {
+            return null;
+        }
+
+        return OffsetDateTime.ofInstant(sentDate.toInstant(), ZoneOffset.UTC);
+    }
+
+    private void storeMigrationEntry(String messageId, OffsetDateTime messageDate) {
+        try {
+            migrationService.findByMessageId(messageId)
+                    .ifPresentOrElse(
+                            this::markMessageAsStoredInFile,
+                            () -> migrationService.createFileMigration(messageId, messageDate));
+        } catch (Exception exception) {
+            log.warn(
+                    "Failed to persist migration entry for messageId={} originating from EML file.",
+                    messageId,
+                    exception);
+        }
+    }
+
+    private void markMessageAsStoredInFile(MigrationEntity entity) {
+        if (entity.isMessageInFile()) {
+            return;
+        }
+
+        migrationService.updateFlagByMessageId(
+                entity.getMessageId(), MigrationFlag.MESSAGE_IN_FILE, true);
     }
 }
