@@ -30,10 +30,12 @@ protonmail-export:
 
 eml:
   reader:
+    enabled: ${EML_READER_ENABLED:false}
     directory: ${EML_READER_DIRECTORY:}
 
 gmail:
   imap:
+    fetch-enabled: ${GMAIL_IMAP_FETCH_ENABLED:false}
     host: ${GMAIL_IMAP_HOST:imap.gmail.com}
     port: ${GMAIL_IMAP_PORT:993}
     ssl-enabled: ${GMAIL_IMAP_SSL_ENABLED:true}
