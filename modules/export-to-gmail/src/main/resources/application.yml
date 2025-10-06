@@ -2,7 +2,7 @@ spring:
     application:
         name: proton-mail-export-to-gmail
     datasource:
-        url: jdbc:h2:file:${pmetg.database.file-path};AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+        url: jdbc:h2:file:${protonmail-export.database.file-path};AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
         driver-class-name: org.h2.Driver
         username: sa
         password: ""
@@ -24,9 +24,9 @@ logging.config: classpath:logback-dev.xml
 
 swagger.server.public.url: ${SWAGGER_SERVER_PUBLIC_URL:https://github.com/sigmalko/proton-mail-export-to-gmail}
 
-pmetg:
+protonmail-export:
   database:
-    file-path: ${PMETG_DATABASE_FILE_PATH:${user.home}/.pmetg/database/pmetg}
+    file-path: ${PROTONMAIL_EXPORT_DATABASE_FILE_PATH:${user.home}/.protonmail-export/database/protonmail-export}
 
 eml:
   reader:
