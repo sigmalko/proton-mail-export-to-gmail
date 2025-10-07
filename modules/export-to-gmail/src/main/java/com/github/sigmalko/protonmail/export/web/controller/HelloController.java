@@ -25,13 +25,12 @@ public class HelloController {
                         () -> log.warn("hello endpoint invoked without API key")
                 );
         logOpenAiHeaders();
-
-        final var out = new StringBuffer();
-        out.append("sms-phone-web, GITHUB_RUN_NUMBER=");
-        out.append(System.getenv("GITHUB_RUN_NUMBER"));
-        out.append(", DOCKER_TAG_VERSION=");
-        out.append(System.getenv("DOCKER_TAG_VERSION")).append("");
-        return ResponseEntity.ok(out.toString());
+        final var response = String.format(
+                "GITHUB_RUN_NUMBER=%s, DOCKER_TAG_VERSION=%s",
+                System.getenv("GITHUB_RUN_NUMBER"),
+                System.getenv("DOCKER_TAG_VERSION")
+        );
+        return ResponseEntity.ok(response);
     }
 
     private void logOpenAiHeaders() {
