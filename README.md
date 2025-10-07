@@ -39,6 +39,25 @@ You need a Gmail account (`gmail.com`) to which the `proton-mail-export-to-gmail
 - Spring-Boot Mail
 - DevContainer & Visual Studio Code
 
+## Optional command-line runners
+
+The application contains optional `CommandLineRunner` components that are disabled by default. Enable them explicitly when you 
+need to work with local EML files or fetch message headers from Gmail:
+
+| Runner | Property | Environment variable | Description |
+| --- | --- | --- | --- |
+| `EmlEmailLoggingRunner` | `eml.reader.enabled` | `EML_READER_ENABLED` | Scans a local directory of exported EML files and logs their headers. Requires `eml.reader.directory`/`EML_READER_DIRECTORY` to point to a readable folder. |
+| `GmailImapFetchRunner` | `gmail.imap.fetch-enabled` | `GMAIL_IMAP_FETCH_ENABLED` | Downloads the latest Gmail message headers over IMAP using the configured credentials. |
+
+To run a runner locally, pass the relevant flag when starting Spring Boot. For example:
+
+```bash
+mvn -pl modules/export-to-gmail spring-boot:run \
+  -Dspring-boot.run.arguments="--eml.reader.enabled=true --eml.reader.directory=/path/to/eml"
+```
+
+Omit the flags (or set them to `false`) to skip running the associated tasks.
+
 # Required Resources
 
 - Create an account on **gmail.com**  
