@@ -20,17 +20,17 @@ public final class RequestUtils {
     }
 
     public static void logHeadersAndParams(HttpServletRequest request, String label) {
-        final Enumeration<String> headerNames = request.getHeaderNames();
+        final var headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            final String name = headerNames.nextElement();
-            final String value = request.getHeader(name);
+            final var name = headerNames.nextElement();
+            final var value = request.getHeader(name);
             log.info("{}|Header|{}={}", label, name, value);
         }
 
-        final Enumeration<String> paramNames = request.getParameterNames();
+        final var paramNames = request.getParameterNames();
         while (paramNames.hasMoreElements()) {
-            final String name = paramNames.nextElement();
-            final String value = request.getParameter(name);
+            final var name = paramNames.nextElement();
+            final var value = request.getParameter(name);
             log.info("{}|Parameter|{}={}", label, name, value);
         }
     }
@@ -80,12 +80,12 @@ public final class RequestUtils {
             return false;
         }
 
-        final String headerValue = request.getHeader(header);
+        final var headerValue = request.getHeader(header);
         if (headerValue == null || headerValue.isBlank()) {
             return false;
         }
 
-        final String normalizedHeader = headerValue.toLowerCase(Locale.ROOT);
+        final var normalizedHeader = headerValue.toLowerCase(Locale.ROOT);
         return Arrays.stream(fragments)
                 .filter(Objects::nonNull)
                 .map(fragment -> fragment.toLowerCase(Locale.ROOT))

@@ -39,7 +39,7 @@ public class GmailImapFetcher {
                         return List.of();
                 }
 
-                try (var session = clientSupport.openReadOnlyFolder(properties.folder())) {
+                try (final var session = clientSupport.openReadOnlyFolder(properties.folder())) {
                         final var store = session.store();
                         final var readableFolders = collectReadableFolders(store);
 
@@ -65,7 +65,7 @@ public class GmailImapFetcher {
                         return List.of();
                 }
 
-                try (var session = clientSupport.openReadOnlyFolder(properties.folder())) {
+                try (final var session = clientSupport.openReadOnlyFolder(properties.folder())) {
                         final var store = session.store();
                         logFolderTopology(store);
 
@@ -100,14 +100,14 @@ public class GmailImapFetcher {
                         return Optional.empty();
                 }
 
-                final int messageCount = inbox.getMessageCount();
+                final var messageCount = inbox.getMessageCount();
                 if (messageCount == 0) {
                         log.info("Folder {} is empty. Skipping header retrieval.", inbox.getFullName());
                         return Optional.empty();
                 }
 
-                final int start = Math.max(1, messageCount - limit + 1);
-                final int end = messageCount;
+                final var start = Math.max(1, messageCount - limit + 1);
+                final var end = messageCount;
 
                 log.info("Getting messages {} - {}", start, end);
                 return Optional.of(new MessageWindow(start, end));
@@ -115,7 +115,7 @@ public class GmailImapFetcher {
 
         @SneakyThrows(MessagingException.class)
         private List<EmailHeader> fetchHeaders(Folder inbox, MessageWindow window) {
-                final Message[] messages = inbox.getMessages(window.start(), window.end());
+                final var messages = inbox.getMessages(window.start(), window.end());
                 fetchEnvelopeOnly(inbox, messages);
 
                 final var headers = Arrays.stream(messages)
@@ -196,7 +196,7 @@ public class GmailImapFetcher {
                 }
 
                 try {
-                        for (Folder child : folder.list()) {
+                        for (final var child : folder.list()) {
                                 visitFolderRecursively(child, depth + 1, visitor);
                         }
                 } catch (MessagingException exception) {
@@ -217,9 +217,9 @@ public class GmailImapFetcher {
                                         exception);
                 }
 
-                final boolean holdsMessages = (folderType & Folder.HOLDS_MESSAGES) != 0;
-                final boolean holdsFolders = (folderType & Folder.HOLDS_FOLDERS) != 0;
-                final String messageCountDescription = holdsMessages
+                final var holdsMessages = (folderType & Folder.HOLDS_MESSAGES) != 0;
+                final var holdsFolders = (folderType & Folder.HOLDS_FOLDERS) != 0;
+                final var messageCountDescription = holdsMessages
                                 ? resolveMessageCountDescription(folder, folderName)
                                 : "n/a";
 

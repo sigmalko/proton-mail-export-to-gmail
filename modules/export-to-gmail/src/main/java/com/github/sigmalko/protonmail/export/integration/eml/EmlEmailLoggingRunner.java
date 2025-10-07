@@ -93,9 +93,9 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
     }
 
     private void processDirectory(Path directory) {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(directory, "*.eml")) {
-            final List<Path> batch = new ArrayList<>(BATCH_SIZE);
-            for (Path file : files) {
+        try (final var files = Files.newDirectoryStream(directory, "*.eml")) {
+            final var batch = new ArrayList<Path>(BATCH_SIZE);
+            for (final var file : files) {
                 if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
                     continue;
                 }
@@ -116,18 +116,18 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
     }
 
     private void processBatch(List<Path> batch) {
-        for (Path file : batch) {
+        for (final var file : batch) {
             processFile(file);
         }
     }
 
     private void processFile(Path file) {
-        try (InputStream inputStream = Files.newInputStream(file)) {
-            final MimeMessage message = new MimeMessage(MAIL_SESSION, inputStream);
-            final String messageId = readHeader(message, "Message-ID");
-            final String from = readHeader(message, "From");
-            final String date = readHeader(message, "Date");
-            final OffsetDateTime messageDate = extractMessageDate(message);
+        try (final var inputStream = Files.newInputStream(file)) {
+            final var message = new MimeMessage(MAIL_SESSION, inputStream);
+            final var messageId = readHeader(message, "Message-ID");
+            final var from = readHeader(message, "From");
+            final var date = readHeader(message, "Date");
+            final var messageDate = extractMessageDate(message);
 
             log.info("Message-ID={}, From={}, Date={}", messageId, from, date);
             if (!StringUtils.hasText(messageId)) {

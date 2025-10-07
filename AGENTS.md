@@ -1,6 +1,7 @@
 ## Programming Guidelines for Java
 
 - Use **Java 21** syntax
+- Within `modules/export-to-gmail`, prefer using `final var` for local variable declarations whenever possible.
 - Use **Lombok**
 - Use **Spring-boot**
 - For logging, use the Lombok annotation `@Slf4j(topic = "TOPIC_NAME")` instead of `LoggerFactory.getLogger`

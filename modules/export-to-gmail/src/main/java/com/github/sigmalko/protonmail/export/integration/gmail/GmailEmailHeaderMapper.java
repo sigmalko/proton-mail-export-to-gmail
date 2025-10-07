@@ -21,7 +21,7 @@ public class GmailEmailHeaderMapper {
         }
 
         public Optional<EmailHeader> map(Message message) {
-                final int messageNumber = message.getMessageNumber();
+                final var messageNumber = message.getMessageNumber();
 
                 try {
                         return Optional.of(new EmailHeader(

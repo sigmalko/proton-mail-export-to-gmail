@@ -25,7 +25,7 @@ public class GmailHeaderSynchronizer {
         }
 
         private void synchronizeHeader(EmailHeader header) {
-                final OffsetDateTime messageDate = header.sentAt() != null
+                final var messageDate = header.sentAt() != null
                                 ? OffsetDateTime.ofInstant(header.sentAt(), ZoneOffset.UTC)
                                 : null;
 

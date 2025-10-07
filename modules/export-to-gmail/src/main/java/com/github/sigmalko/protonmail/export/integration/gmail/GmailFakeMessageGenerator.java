@@ -40,7 +40,7 @@ public class GmailFakeMessageGenerator {
 
                 final var session = clientSupport.createSession();
 
-                try (var folderSession = clientSupport.openFolder(TARGET_FOLDER, Folder.READ_WRITE)) {
+                try (final var folderSession = clientSupport.openFolder(TARGET_FOLDER, Folder.READ_WRITE)) {
                         final var exportedFolder = folderSession.folder();
                         final var message = buildFakeMessage(session);
 

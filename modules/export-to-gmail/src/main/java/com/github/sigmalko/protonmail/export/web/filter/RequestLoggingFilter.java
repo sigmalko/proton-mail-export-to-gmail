@@ -25,12 +25,12 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        final String actionName = buildActionName(request);
+        final var actionName = buildActionName(request);
         RequestUtils.logHeadersAndParams(request, actionName);
-        final String clientIp = RequestUtils.getClientIp(request);
-        final boolean android = RequestUtils.isAndroid(request);
-        final boolean windows = RequestUtils.isWindows(request);
-        final boolean bot = RequestUtils.isBot(request);
+        final var clientIp = RequestUtils.getClientIp(request);
+        final var android = RequestUtils.isAndroid(request);
+        final var windows = RequestUtils.isWindows(request);
+        final var bot = RequestUtils.isBot(request);
 
         log.info(
                 "{}|ClientIp={} android={} windows={} bot={}",
@@ -45,9 +45,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     private String buildActionName(HttpServletRequest request) {
-        final String method = request.getMethod();
-        final String uri = request.getRequestURI();
-        final String query = request.getQueryString();
+        final var method = request.getMethod();
+        final var uri = request.getRequestURI();
+        final var query = request.getQueryString();
         if (query == null || query.isEmpty()) {
             return method + " " + uri;
         }
