@@ -39,18 +39,11 @@ public class GmailImapFetcher {
                         return List.of();
                 }
 
-                try (final var session = clientSupport.openReadOnlyFolder(properties.folder())) {
-                        final var store = session.store();
+                try (final var storeSession = clientSupport.openStore()) {
+                        final var store = storeSession.store();
                         final var readableFolders = collectReadableFolders(store);
 
-                        if (readableFolders.isEmpty()) {
-                                log.info("No readable Gmail folders were discovered.");
-                        } else {
-                                log.info(
-                                                "Readable Gmail folders ({}): {}",
-                                                readableFolders.size(),
-                                                String.join(", ", readableFolders));
-                        }
+                        logDiscoveredFolders(readableFolders);
 
                         return List.copyOf(readableFolders);
                 } catch (MessagingException exception) {
@@ -65,44 +58,49 @@ public class GmailImapFetcher {
                         return List.of();
                 }
 
-                try (final var session = clientSupport.openReadOnlyFolder(properties.folder())) {
-                        final var store = session.store();
+                try (final var storeSession = clientSupport.openStore()) {
+                        final var store = storeSession.store();
                         logFolderTopology(store);
 
-                        final var inbox = session.folder();
-                        logFolderDetails(inbox);
+                        final var readableFolders = collectReadableFolders(store);
+                        logDiscoveredFolders(readableFolders);
 
-                        return determineWindow(inbox, properties.messageLimit())
-                                        .map(window -> fetchHeaders(inbox, window))
-                                        .orElseGet(List::of);
+                        final var headers = new ArrayList<EmailHeader>();
+                        final var messageLimit = properties.messageLimit();
+
+                        for (final var folderName : readableFolders) {
+                                fetchHeadersFromFolder(store, folderName, messageLimit, headers);
+                        }
+
+                        return List.copyOf(headers);
                 } catch (MessagingException exception) {
                         log.error("Failed to fetch Gmail message headers.", exception);
                         return List.of();
                 }
         }
 
-        private void logFolderDetails(Folder inbox) throws MessagingException {
-                log.info("Opened Gmail folder '{}' in read-only mode.", inbox.getFullName());
-                log.info("Messages found in folder {}: {}", inbox.getFullName(), inbox.getMessageCount());
+        private void logFolderDetails(Folder folder) throws MessagingException {
+                log.info("Opened Gmail folder '{}' in read-only mode.", folder.getFullName());
+                log.info("Messages found in folder {}: {}", folder.getFullName(), folder.getMessageCount());
 
-                log.info("inbox.getFullName(): {}", inbox.getFullName());
-                log.info("inbox.getMode(): {}", inbox.getMode());
-                log.info("inbox.getName(): {}", inbox.getName());
-                log.info("inbox.getSeparator(): {}", inbox.getSeparator());
-                log.info("inbox.getType(): {}", inbox.getType());
-                log.info("inbox.getUnreadMessageCount(): {}", inbox.getUnreadMessageCount());
-                log.info("inbox.getNewMessageCount(): {}", inbox.getNewMessageCount());
+                log.info("folder.getFullName(): {}", folder.getFullName());
+                log.info("folder.getMode(): {}", folder.getMode());
+                log.info("folder.getName(): {}", folder.getName());
+                log.info("folder.getSeparator(): {}", folder.getSeparator());
+                log.info("folder.getType(): {}", folder.getType());
+                log.info("folder.getUnreadMessageCount(): {}", folder.getUnreadMessageCount());
+                log.info("folder.getNewMessageCount(): {}", folder.getNewMessageCount());
         }
 
-        private Optional<MessageWindow> determineWindow(Folder inbox, int limit) throws MessagingException {
+        private Optional<MessageWindow> determineWindow(Folder folder, int limit) throws MessagingException {
                 if (limit <= 0) {
                         log.info("Configured message limit is {}. Skipping header retrieval.", limit);
                         return Optional.empty();
                 }
 
-                final var messageCount = inbox.getMessageCount();
+                final var messageCount = folder.getMessageCount();
                 if (messageCount == 0) {
-                        log.info("Folder {} is empty. Skipping header retrieval.", inbox.getFullName());
+                        log.info("Folder {} is empty. Skipping header retrieval.", folder.getFullName());
                         return Optional.empty();
                 }
 
@@ -114,9 +112,9 @@ public class GmailImapFetcher {
         }
 
         @SneakyThrows(MessagingException.class)
-        private List<EmailHeader> fetchHeaders(Folder inbox, MessageWindow window) {
-                final var messages = inbox.getMessages(window.start(), window.end());
-                fetchEnvelopeOnly(inbox, messages);
+        private List<EmailHeader> fetchHeaders(Folder folder, MessageWindow window) {
+                final var messages = folder.getMessages(window.start(), window.end());
+                fetchEnvelopeOnly(folder, messages);
 
                 final var headers = Arrays.stream(messages)
                                 .<EmailHeader>mapMulti(mapper::map)
@@ -127,10 +125,10 @@ public class GmailImapFetcher {
                 return headers;
         }
 
-        private void fetchEnvelopeOnly(Folder inbox, Message[] messages) throws MessagingException {
+        private void fetchEnvelopeOnly(Folder folder, Message[] messages) throws MessagingException {
                 final var fetchProfile = new FetchProfile();
                 fetchProfile.add(FetchProfile.Item.ENVELOPE);
-                inbox.fetch(messages, fetchProfile);
+                folder.fetch(messages, fetchProfile);
         }
 
         private record MessageWindow(int start, int end) {
@@ -144,6 +142,56 @@ public class GmailImapFetcher {
                 final var from = StringUtils.hasText(header.from()) ? header.from() : "N/A";
 
                 log.info("{};;{};{};{}", header.messageNumber(), messageId, formattedDate, from);
+        }
+
+        private void fetchHeadersFromFolder(Store store, String folderName, int messageLimit, List<EmailHeader> accumulator) {
+                Folder folder = null;
+                try {
+                        folder = store.getFolder(folderName);
+                        if (folder == null) {
+                                log.warn("Gmail folder '{}' could not be resolved; skipping header retrieval.", folderName);
+                                return;
+                        }
+
+                        if (!folder.exists()) {
+                                log.warn("Gmail folder '{}' does not exist or is not accessible; skipping header retrieval.", folderName);
+                                return;
+                        }
+
+                        folder.open(Folder.READ_ONLY);
+                        logFolderDetails(folder);
+
+                        final var window = determineWindow(folder, messageLimit);
+                        if (window.isPresent()) {
+                                accumulator.addAll(fetchHeaders(folder, window.orElseThrow()));
+                        }
+                } catch (MessagingException exception) {
+                        log.warn("Failed to fetch Gmail message headers from folder '{}'.", folderName, exception);
+                } finally {
+                        closeQuietly(folder);
+                }
+        }
+
+        private void closeQuietly(Folder folder) {
+                if (folder == null) {
+                        return;
+                }
+
+                try {
+                        if (folder.isOpen()) {
+                                folder.close(false);
+                        }
+                } catch (MessagingException exception) {
+                        log.warn("Failed to close Gmail folder '{}' cleanly.", resolveFolderDisplayName(folder), exception);
+                }
+        }
+
+        private void logDiscoveredFolders(List<String> readableFolders) {
+                if (readableFolders.isEmpty()) {
+                        log.info("No readable Gmail folders were discovered.");
+                } else {
+                        log.info("Readable Gmail folders ({}): {}", readableFolders.size(), readableFolders);
+                }
         }
 
         private void logFolderTopology(Store store) {

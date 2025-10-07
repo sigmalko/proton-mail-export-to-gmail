@@ -45,7 +45,6 @@ gmail:
     host: ${GMAIL_IMAP_HOST:imap.gmail.com}
     port: ${GMAIL_IMAP_PORT:993}
     ssl-enabled: ${GMAIL_IMAP_SSL_ENABLED:true}
-    folder: ${GMAIL_IMAP_FOLDER:INBOX}
     username: ${GMAIL_IMAP_USERNAME:}
     password: ${GMAIL_IMAP_PASSWORD:}
     message-limit: ${GMAIL_IMAP_MESSAGE_LIMIT:50}

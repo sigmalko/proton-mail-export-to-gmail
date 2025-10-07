@@ -49,17 +49,13 @@ public class GmailImapClientSupport {
                 return openFolder(folder, Folder.READ_ONLY);
         }
 
-        public FolderSession openFolder(String folderName, int mode) throws MessagingException {
-                final var session = createSession();
-                final var store = session.getStore(resolveProtocol());
+        public StoreSession openStore() throws MessagingException {
+                final var store = connectStore();
+                return new StoreSession(store);
+        }
 
-                log.info(
-                                "Connecting to Gmail IMAP server {}:{} using SSL: {}",
-                                properties.host(),
-                                properties.port(),
-                                properties.sslEnabled());
-                store.connect(properties.host(), properties.port(), properties.username(), properties.password());
-                log.info("store.isConnected(): {}", store.isConnected());
+        public FolderSession openFolder(String folderName, int mode) throws MessagingException {
+                final var store = connectStore();
 
                 final var targetFolder = store.getFolder(folderName);
                 if (targetFolder == null) {
@@ -79,6 +75,20 @@ public class GmailImapClientSupport {
                 return new FolderSession(store, targetFolder);
         }
 
+        private Store connectStore() throws MessagingException {
+                final var session = createSession();
+                final var store = session.getStore(resolveProtocol());
+
+                log.info(
+                                "Connecting to Gmail IMAP server {}:{} using SSL: {}",
+                                properties.host(),
+                                properties.port(),
+                                properties.sslEnabled());
+                store.connect(properties.host(), properties.port(), properties.username(), properties.password());
+                log.info("store.isConnected(): {}", store.isConnected());
+                return store;
+        }
+
         public record FolderSession(Store store, Folder folder) implements AutoCloseable {
 
                 @Override
@@ -91,6 +101,20 @@ public class GmailImapClientSupport {
                                 }
                         }
 
+                        if (store != null && store.isConnected()) {
+                                try {
+                                        store.close();
+                                } catch (MessagingException exception) {
+                                        log.warn("Failed to close IMAP store cleanly.", exception);
+                                }
+                        }
+                }
+        }
+
+        public record StoreSession(Store store) implements AutoCloseable {
+
+                @Override
+                public void close() {
                         if (store != null && store.isConnected()) {
                                 try {
                                         store.close();
