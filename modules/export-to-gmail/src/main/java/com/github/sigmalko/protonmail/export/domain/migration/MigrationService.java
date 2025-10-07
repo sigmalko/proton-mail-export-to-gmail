@@ -23,11 +23,6 @@ public class MigrationService {
     }
 
     @Transactional
-    public MigrationEntity createGmailMigration(String messageId, OffsetDateTime messageDate) {
-        return createMigration(messageId, messageDate, builder -> builder.messageInGmail(true));
-    }
-
-    @Transactional
     public void updateFlagByMessageId(String messageId, MigrationFlag flag, boolean value) {
         int updatedRows = switch (flag) {
             case MESSAGE_IN_FILE -> migrationRepository.updateMessageInFileByMessageId(messageId, value);

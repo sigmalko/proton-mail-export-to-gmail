@@ -43,11 +43,14 @@ public class GmailHeaderSynchronizer {
                         }
 
                         final var existing = migrationService.findByMessageId(header.messageId());
-                        if (existing.isPresent()) {
-                                markMessageAsExisting(existing.get());
-                        } else {
-                                migrationService.createGmailMigration(header.messageId(), messageDate);
+                        if (existing.isEmpty()) {
+                                log.debug(
+                                                "Skipping Gmail message {} because it was not discovered in local files.",
+                                                header.messageId());
+                                return;
                         }
+
+                        markMessageAsExisting(existing.orElseThrow());
                 } catch (Exception exception) {
                         if (!StringUtils.hasText(header.messageId())) {
                                 log.warn(
