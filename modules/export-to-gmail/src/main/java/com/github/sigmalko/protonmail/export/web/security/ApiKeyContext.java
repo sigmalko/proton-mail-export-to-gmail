@@ -2,6 +2,7 @@ package com.github.sigmalko.protonmail.export.web.security;
 
 import java.util.Optional;
 
+import lombok.Setter;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -13,11 +14,8 @@ public class ApiKeyContext {
 
     public static final String HEADER_NAME = "X-Api-Key";
 
+    @Setter
     private String apiKey;
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
 
     public Optional<String> apiKey() {
         if (apiKey == null || apiKey.isBlank()) {

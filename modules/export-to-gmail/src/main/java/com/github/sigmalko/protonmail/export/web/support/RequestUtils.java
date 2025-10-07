@@ -9,15 +9,14 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public final class RequestUtils {
+@UtilityClass
+public class RequestUtils {
 
     private static final List<String> CLIENT_IP_HEADERS = List.of("x-real-ip", "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP");
-
-    private RequestUtils() {
-    }
 
     public static void logHeadersAndParams(HttpServletRequest request, String label) {
         final var headerNames = request.getHeaderNames();

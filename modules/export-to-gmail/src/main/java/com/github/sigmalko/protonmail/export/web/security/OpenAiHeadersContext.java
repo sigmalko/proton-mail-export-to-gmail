@@ -2,6 +2,7 @@ package com.github.sigmalko.protonmail.export.web.security;
 
 import java.util.Optional;
 
+import lombok.Setter;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -15,21 +16,12 @@ public class OpenAiHeadersContext {
     public static final String CONVERSATION_ID_HEADER = "openai-conversation-id";
     public static final String GPT_ID_HEADER = "openai-gpt-id";
 
+    @Setter
     private String ephemeralUserId;
+    @Setter
     private String conversationId;
+    @Setter
     private String gptId;
-
-    public void setEphemeralUserId(String ephemeralUserId) {
-        this.ephemeralUserId = ephemeralUserId;
-    }
-
-    public void setConversationId(String conversationId) {
-        this.conversationId = conversationId;
-    }
-
-    public void setGptId(String gptId) {
-        this.gptId = gptId;
-    }
 
     public Optional<String> ephemeralUserId() {
         return optionalOf(ephemeralUserId);

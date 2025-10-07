@@ -9,8 +9,8 @@
                 <relativePath/> <!-- lookup parent from repository -->
         </parent>
         <groupId>com.github.sigmalko.protonmail.export</groupId>
-                <artifactId>proton-mail-export-to-gmail</artifactId>
-    <version>0.0.38-SNAPSHOT</version>
+        <artifactId>proton-mail-export-to-gmail</artifactId>
+        <version>0.0.40-SNAPSHOT</version>
 	<name>proton-mail-export-to-gmail</name>
 	<description>proton-mail-export-to-gmail</description>
 	<url/>

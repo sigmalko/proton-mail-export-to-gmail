@@ -3,6 +3,9 @@
 - Use **Java 21** syntax
 - Within `modules/export-to-gmail`, prefer using `final var` for local variable declarations whenever possible.
 - Use **Lombok**
+- Prefer leveraging Lombok annotations (e.g., `@Getter`, `@Setter`, `@RequiredArgsConstructor`, `@Builder`) to remove boilerplate whenever
+  feasible in Java code. When writing static utility classes, annotate them with `@UtilityClass` instead of hand-writing private constructors
+  or manual static wrappers.
 - Use **Spring-boot**
 - For logging, use the Lombok annotation `@Slf4j(topic = "TOPIC_NAME")` instead of `LoggerFactory.getLogger`
 - Use English when writing descriptions or documentation for the project
