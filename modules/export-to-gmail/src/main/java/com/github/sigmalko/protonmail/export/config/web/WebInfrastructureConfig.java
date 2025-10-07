@@ -1,5 +1,6 @@
 package com.github.sigmalko.protonmail.export.config.web;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -12,9 +13,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 public class WebInfrastructureConfig {
 
     @Bean
-    FilterRegistrationBean<CharacterEncodingFilter> characterEncodingFilterRegistration() {
+    public FilterRegistrationBean<CharacterEncodingFilter> characterEncodingFilterRegistration() {
         final var filter = new CharacterEncodingFilter();
-        filter.setEncoding("UTF-8");
+        filter.setEncoding(StandardCharsets.UTF_8.name());
         filter.setForceEncoding(true);
         filter.setForceRequestEncoding(true);
         filter.setForceResponseEncoding(false);
