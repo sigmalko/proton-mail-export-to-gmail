@@ -2,12 +2,12 @@ name: export-to-gmail-docker
 
 on:
  
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/export-to-gmail-docker.yml'
-      - 'modules/export-to-gmail-docker/**'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - '.github/workflows/export-to-gmail-docker.yml'
+  #     - 'modules/export-to-gmail-docker/**'
   workflow_call:
 
 env:
