@@ -29,7 +29,7 @@ public class MigrationEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "migration_seq")
     private Long id;
 
-    @Column(name = "MESSAGE_ID", nullable = false, unique = true, length = 512)
+    @Column(name = "MESSAGE_ID", nullable = false, unique = true, length = 998 /* RFC 5322 */)
     private String messageId;
 
     @Column(name = "MESSAGE_DATE")
