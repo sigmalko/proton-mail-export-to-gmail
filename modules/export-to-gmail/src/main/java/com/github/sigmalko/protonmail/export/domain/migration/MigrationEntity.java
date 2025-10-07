@@ -42,8 +42,4 @@ public class MigrationEntity {
     @Column(name = "MESSAGE_IN_GMAIL", nullable = false)
     @Builder.Default
     private boolean messageInGmail = false;
-
-    @Column(name = "MESSAGE_EXPORTED", nullable = false)
-    @Builder.Default
-    private boolean messageExported = false;
 }

@@ -27,7 +27,6 @@ public class MigrationService {
         int updatedRows = switch (flag) {
             case MESSAGE_IN_FILE -> migrationRepository.updateMessageInFileByMessageId(messageId, value);
             case MESSAGE_IN_GMAIL -> migrationRepository.updateMessageInGmailByMessageId(messageId, value);
-            case MESSAGE_EXPORTED -> migrationRepository.updateMessageExportedByMessageId(messageId, value);
         };
 
         if (updatedRows == 0) {
@@ -45,11 +44,6 @@ public class MigrationService {
     @Transactional(readOnly = true)
     public List<MigrationRepository.MigrationStatus> findMessagesNotExistingInGmail() {
         return migrationRepository.findAllByMessageInGmailFalse();
-    }
-
-    @Transactional(readOnly = true)
-    public List<MigrationRepository.MigrationStatus> findMessagesNotExported() {
-        return migrationRepository.findAllByMessageExportedFalse();
     }
 
     private MigrationEntity createMigration(
@@ -72,7 +66,6 @@ public class MigrationService {
 
     public enum MigrationFlag {
         MESSAGE_IN_FILE,
-        MESSAGE_IN_GMAIL,
-        MESSAGE_EXPORTED
+        MESSAGE_IN_GMAIL
     }
 }

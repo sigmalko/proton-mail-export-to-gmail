@@ -16,8 +16,6 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
 
     List<MigrationStatus> findAllByMessageInGmailFalse();
 
-    List<MigrationStatus> findAllByMessageExportedFalse();
-
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update MigrationEntity m set m.messageInFile = :value where m.messageId = :messageId")
     int updateMessageInFileByMessageId(
@@ -28,15 +26,9 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
     int updateMessageInGmailByMessageId(
             @Param("messageId") String messageId, @Param("value") boolean value);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update MigrationEntity m set m.messageExported = :value where m.messageId = :messageId")
-    int updateMessageExportedByMessageId(
-            @Param("messageId") String messageId, @Param("value") boolean value);
-
     record MigrationStatus(
             String messageId,
             OffsetDateTime messageDate,
             boolean messageInFile,
-            boolean messageInGmail,
-            boolean messageExported) {}
+            boolean messageInGmail) {}
 }
