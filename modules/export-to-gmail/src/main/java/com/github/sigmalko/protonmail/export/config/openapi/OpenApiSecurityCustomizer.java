@@ -34,11 +34,21 @@ public class OpenApiSecurityCustomizer {
                     }
                 });
 
-                clearSecurity(openApi.getPaths().get("/mail"), PathItem::getPost);
-                clearSecurity(openApi.getPaths().get("/mail"), PathItem::getGet);
-                clearSecurity(openApi.getPaths().get("/mail/bulk"), PathItem::getPost);
-                clearSecurity(openApi.getPaths().get("/mail/{source}/last"), PathItem::getGet);
-                clearSecurity(openApi.getPaths().get("/mail/all"), PathItem::getGet);
+                clearSecurity(
+                        openApi.getPaths().get(
+                                "/api/migrations/statistics/messages-present-in-gmail-and-files/count"
+                        ),
+                        PathItem::getGet
+                );
+                clearSecurity(
+                        openApi.getPaths().get("/api/migrations/statistics/messages-missing-in-gmail/count"),
+                        PathItem::getGet
+                );
+                clearSecurity(
+                        openApi.getPaths().get("/api/migrations/messages/missing-in-gmail"),
+                        PathItem::getGet
+                );
+                clearSecurity(openApi.getPaths().get("/hello"), PathItem::getGet);
 
                 ignoreForOpenAi(openApi.getPaths().get("/mail/bulk"), PathItem::getPost, "receiveBulkMail");
                 ignoreForOpenAi(openApi.getPaths().get("/mail"), PathItem::getPost, "receiveMail");
