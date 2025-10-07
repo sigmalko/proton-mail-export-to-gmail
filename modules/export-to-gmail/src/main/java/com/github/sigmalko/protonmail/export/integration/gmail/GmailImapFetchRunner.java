@@ -3,7 +3,6 @@ package com.github.sigmalko.protonmail.export.integration.gmail;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -12,13 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "gmail.imap", name = "fetch-enabled", havingValue = "true")
-public class GmailImapFetchRunner implements CommandLineRunner {
+public class GmailImapFetchRunner {
 
     private final GmailImapFetcher gmailImapFetcher;
     private final ApplicationContext applicationContext;
 
-    @Override
-    public void run(String... args) {
+    public void run() {
         log.info("##################################################");
         log.info("Fetching latest email headers from Gmail via IMAP...");
         log.info("##################################################");

@@ -13,10 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -33,10 +30,9 @@ import com.github.sigmalko.protonmail.export.domain.problem.ProblemService;
 
 @Slf4j(topic = "EmlEmailLoggingRunner")
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "eml.reader", name = "enabled", havingValue = "true")
-public class EmlEmailLoggingRunner implements CommandLineRunner {
+public class EmlEmailLoggingRunner {
 
     private static final Session MAIL_SESSION = Session.getInstance(new Properties());
     private static final int BATCH_SIZE = 1_000;
@@ -45,8 +41,7 @@ public class EmlEmailLoggingRunner implements CommandLineRunner {
     private final MigrationService migrationService;
     private final ProblemService problemService;
 
-    @Override
-    public void run(String... args) {
+    public void run() {
         log.info("##################################################");
         log.info("Logging headers from local EML files...");
         log.info("##################################################");
