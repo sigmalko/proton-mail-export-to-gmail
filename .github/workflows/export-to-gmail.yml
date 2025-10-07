@@ -82,9 +82,9 @@ jobs:
           draft: false                    
           prerelease: false
           body: |
-            This release includes the sms-phone-android version ${{ steps.set_version.outputs.target_version }}. 
+            This release includes the version ${{ steps.set_version.outputs.target_version }}. 
 
-      - name: Upload Release *.jar files to Release
+      - name: Upload files to Release
         if: success() # Only run if previous step succeeded
         run: |
           cd modules/export-to-gmail
@@ -95,6 +95,8 @@ jobs:
           done
           echo "Uploading ../../README.md"
           gh release upload "${{ steps.set_version.outputs.target_version }}" "../../README.md#README.md" --clobber
+          echo "Uploading ../../modules/export-to-gmail-docker/docker-compose.yml"
+          gh release upload "${{ steps.set_version.outputs.target_version }}" "../../modules/export-to-gmail-docker/docker-compose.yml#docker-compose.yml" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         

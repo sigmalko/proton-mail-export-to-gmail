@@ -4,18 +4,21 @@ services:
       image: ghcr.io/sigmalko/proton-mail-export-to-gmail:${IMG_VERSION_PROTON_MAIL_EXPORT_TO_GMAIL}
       restart: unless-stopped   
       environment:
-        SERVER_PORT: ${SERVER_PORT:-8080}
-        SWAGGER_SERVER_PUBLIC_URL: ${SWAGGER_SERVER_PUBLIC_URL:-https://github.com/sigmalko/proton-mail-export-to-gmail}
-        PROTONMAIL_EXPORT_DATABASE_FILE_PATH: ${PROTONMAIL_EXPORT_DATABASE_FILE_PATH:-${HOME:-/root}/.protonmail-export/database/protonmail-export}
-        EML_READER_ENABLED: ${EML_READER_ENABLED:-false}
-        EML_READER_DIRECTORY: ${EML_READER_DIRECTORY:-}
-        GMAIL_IMAP_FETCH_ENABLED: ${GMAIL_IMAP_FETCH_ENABLED:-false}
-        GMAIL_IMAP_HOST: ${GMAIL_IMAP_HOST:-imap.gmail.com}
-        GMAIL_IMAP_PORT: ${GMAIL_IMAP_PORT:-993}
-        GMAIL_IMAP_SSL_ENABLED: ${GMAIL_IMAP_SSL_ENABLED:-true}
+        SERVER_PORT: 8080
+        SWAGGER_SERVER_PUBLIC_URL: https://github.com/sigmalko/proton-mail-export-to-gmail
+        PROTONMAIL_EXPORT_DATABASE_FILE_PATH: /workspace/.data/h2-database/proton-mail-export-to-gmail
+        EML_READER_ENABLED: false
+        EML_READER_DIRECTORY: /workspace/.data/proton-emls
+        GMAIL_IMAP_FETCH_ENABLED: false
+        GMAIL_IMAP_HOST: imap.gmail.com
+        GMAIL_IMAP_PORT: 993
+        GMAIL_IMAP_SSL_ENABLED: true
         GMAIL_IMAP_USERNAME: ${GMAIL_IMAP_USERNAME:-}
         GMAIL_IMAP_PASSWORD: ${GMAIL_IMAP_PASSWORD:-}
         GMAIL_IMAP_MESSAGE_LIMIT: ${GMAIL_IMAP_MESSAGE_LIMIT:-50}
+      volumes:
+        - ${HOST_PROTON_EXPORT_DATABASE_H2_DIR:.tmp}:/workspace/.data/h2-database/proton-mail-export-to-gmail
+        - ${HOST_PROTON_EMLS_DIR:.tmp}:/workspace/.data/proton-emls
       ports:
         - 8080:8080
 
