@@ -15,3 +15,4 @@
 - When creating `@GetMapping` or `@PostMapping` methods, annotate them with relevant OpenAPI metadata that clearly explains for Custom GPT in ChatGPT what the endpoint does and when it should be invoked.
 
 - Whenever `@GetMapping` or `@PostMapping` endpoints are added, removed, or modified, update the `clearSecurity(...)` calls in `OpenApiSecurityCustomizer` so they reference the current paths.
+- Keep the `environment` section for the `proton-mail-export-to-gmail` service in `modules/export-to-gmail-docker/docker-compose.yml` aligned with the environment variables referenced in `modules/export-to-gmail/src/main/resources/application.yml`.
