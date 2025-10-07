@@ -10,6 +10,9 @@ on:
     paths:
       - '.github/workflows/ops-delete-old-releases.yml'    
 
+permissions:
+  contents: write   # <-- need to remove releases
+
 jobs:
 
   deleting:
