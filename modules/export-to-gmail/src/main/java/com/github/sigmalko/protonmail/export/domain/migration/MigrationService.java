@@ -46,6 +46,21 @@ public class MigrationService {
         return migrationRepository.findAllByMessageInGmailFalse();
     }
 
+    @Transactional(readOnly = true)
+    public long countMessagesPresentInGmailAndFiles() {
+        return migrationRepository.countByMessageInGmailTrueAndMessageInFileTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public long countMessagesMissingInGmailButInFiles() {
+        return migrationRepository.countByMessageInGmailFalseAndMessageInFileTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> findMessageIdsMissingInGmailButInFiles() {
+        return migrationRepository.findAllMessageIdByMessageInGmailFalseAndMessageInFileTrue();
+    }
+
     private MigrationEntity createMigration(
             String messageId,
             OffsetDateTime messageDate,

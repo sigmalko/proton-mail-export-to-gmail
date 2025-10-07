@@ -9,3 +9,4 @@
 - When completing Codex-assigned tasks, bump the version number defined in `pom.xml`
 - To run tests, change to `modules/export-to-gmail` and execute `mvn clean package`
 - Persist information in the preferred **H2** database, keeping the database files on disk, and integrate with it through Spring Boot.
+- When creating `@GetMapping` or `@PostMapping` methods, annotate them with relevant OpenAPI metadata that clearly explains for Custom GPT in ChatGPT what the endpoint does and when it should be invoked.
