@@ -63,6 +63,12 @@
 			"documentationUrl": "https://docs.github.com/en/codespaces/managing-your-codespaces/managing-encrypted-secrets-for-your-codespaces"
 		}
 	},	
-//	"postCreateCommand": "sudo chown -R vscode:vscode /workspace"
-  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh && mkdir -p /tmp/h2db && mkdir -p /tmp/emls"
+  "postCreateCommand": [
+	"sudo chown -R vscode:vscode /workspace",
+	"chmod +x /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh",
+	"bash /workspace/.devcontainer/codespaces-export-to-gmail/setup-ssh.sh",
+	"mkdir -p /workspace/.tmp/",
+	"mkdir -p /workspace/.tmp/emls",
+	"mkdir -p /workspace/.tmp/database"
+  ]
 }

@@ -17,3 +17,4 @@ replay_pid*
 modules/export-to-gmail/target
 modules/export-to-gmail/target/classes
 modules/export-to-gmail/app.pid
+.tmp
