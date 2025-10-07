@@ -1,7 +1,6 @@
 package com.github.sigmalko.protonmail.export.config.web;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -10,7 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.github.sigmalko.protonmail.export.web.security.ApiKeyInterceptor;
 
 @Configuration
-@EnableConfigurationProperties(SpringMvcCorsProperties.class)
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 

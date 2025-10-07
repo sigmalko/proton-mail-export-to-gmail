@@ -1,6 +1,12 @@
 spring:
     application:
         name: proton-mail-export-to-gmail
+    servlet:
+        encoding:
+            charset: UTF-8
+            force-request: true
+            force-response: true
+            enabled: true
     datasource:
         url: jdbc:h2:file:${protonmail-export.database.file-path};AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
         driver-class-name: org.h2.Driver
@@ -52,10 +58,12 @@ protonmail-export:
 
 eml:
   reader:
+    enabled: ${EML_READER_ENABLED:false}
     directory: ${EML_READER_DIRECTORY:}
 
 gmail:
   imap:
+    fetch-enabled: ${GMAIL_IMAP_FETCH_ENABLED:false}
     host: ${GMAIL_IMAP_HOST:imap.gmail.com}
     port: ${GMAIL_IMAP_PORT:993}
     ssl-enabled: ${GMAIL_IMAP_SSL_ENABLED:true}

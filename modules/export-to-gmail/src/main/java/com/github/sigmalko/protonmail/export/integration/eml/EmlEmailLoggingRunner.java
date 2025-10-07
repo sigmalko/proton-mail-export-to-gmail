@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,7 @@ import com.github.sigmalko.protonmail.export.domain.problem.ProblemService;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "eml.reader", name = "enabled", havingValue = "true")
 public class EmlEmailLoggingRunner implements CommandLineRunner {
 
     private static final Session MAIL_SESSION = Session.getInstance(new Properties());
