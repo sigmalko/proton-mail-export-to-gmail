@@ -39,9 +39,9 @@ public class MigrationEntity {
     @Builder.Default
     private boolean messageInFile = false;
 
-    @Column(name = "MESSAGE_ALREADY_EXISTS", nullable = false)
+    @Column(name = "MESSAGE_IN_GMAIL", nullable = false)
     @Builder.Default
-    private boolean messageAlreadyExists = false;
+    private boolean messageInGmail = false;
 
     @Column(name = "MESSAGE_EXPORTED", nullable = false)
     @Builder.Default

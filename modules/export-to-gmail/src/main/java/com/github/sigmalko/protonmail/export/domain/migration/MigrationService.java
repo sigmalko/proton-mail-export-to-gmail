@@ -24,15 +24,14 @@ public class MigrationService {
 
     @Transactional
     public MigrationEntity createGmailMigration(String messageId, OffsetDateTime messageDate) {
-        return createMigration(messageId, messageDate, builder -> builder.messageAlreadyExists(true));
+        return createMigration(messageId, messageDate, builder -> builder.messageInGmail(true));
     }
 
     @Transactional
     public void updateFlagByMessageId(String messageId, MigrationFlag flag, boolean value) {
         int updatedRows = switch (flag) {
             case MESSAGE_IN_FILE -> migrationRepository.updateMessageInFileByMessageId(messageId, value);
-            case MESSAGE_ALREADY_EXISTS ->
-                    migrationRepository.updateMessageAlreadyExistsByMessageId(messageId, value);
+            case MESSAGE_IN_GMAIL -> migrationRepository.updateMessageInGmailByMessageId(messageId, value);
             case MESSAGE_EXPORTED -> migrationRepository.updateMessageExportedByMessageId(messageId, value);
         };
 
@@ -50,7 +49,7 @@ public class MigrationService {
 
     @Transactional(readOnly = true)
     public List<MigrationRepository.MigrationStatus> findMessagesNotExistingInGmail() {
-        return migrationRepository.findAllByMessageAlreadyExistsFalse();
+        return migrationRepository.findAllByMessageInGmailFalse();
     }
 
     @Transactional(readOnly = true)
@@ -68,17 +67,17 @@ public class MigrationService {
         builderCustomizer.accept(builder);
         MigrationEntity saved = migrationRepository.save(builder.build());
         log.debug(
-                "Created migration entry with id={} for messageId={} (messageInFile={}, messageAlreadyExists={})",
+                "Created migration entry with id={} for messageId={} (messageInFile={}, messageInGmail={})",
                 saved.getId(),
                 messageId,
                 saved.isMessageInFile(),
-                saved.isMessageAlreadyExists());
+                saved.isMessageInGmail());
         return saved;
     }
 
     public enum MigrationFlag {
         MESSAGE_IN_FILE,
-        MESSAGE_ALREADY_EXISTS,
+        MESSAGE_IN_GMAIL,
         MESSAGE_EXPORTED
     }
 }

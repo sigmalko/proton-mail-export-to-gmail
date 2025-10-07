@@ -66,11 +66,11 @@ public class GmailHeaderSynchronizer {
         }
 
         private void markMessageAsExisting(MigrationStatus status) {
-                if (status.messageAlreadyExists()) {
+                if (status.messageInGmail()) {
                         return;
                 }
 
                 migrationService.updateFlagByMessageId(
-                                status.messageId(), MigrationFlag.MESSAGE_ALREADY_EXISTS, true);
+                                status.messageId(), MigrationFlag.MESSAGE_IN_GMAIL, true);
         }
 }

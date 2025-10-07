@@ -14,7 +14,7 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
 
     Optional<MigrationStatus> findByMessageId(String messageId);
 
-    List<MigrationStatus> findAllByMessageAlreadyExistsFalse();
+    List<MigrationStatus> findAllByMessageInGmailFalse();
 
     List<MigrationStatus> findAllByMessageExportedFalse();
 
@@ -24,9 +24,8 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
             @Param("messageId") String messageId, @Param("value") boolean value);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-            "update MigrationEntity m set m.messageAlreadyExists = :value where m.messageId = :messageId")
-    int updateMessageAlreadyExistsByMessageId(
+    @Query("update MigrationEntity m set m.messageInGmail = :value where m.messageId = :messageId")
+    int updateMessageInGmailByMessageId(
             @Param("messageId") String messageId, @Param("value") boolean value);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -38,6 +37,6 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
             String messageId,
             OffsetDateTime messageDate,
             boolean messageInFile,
-            boolean messageAlreadyExists,
+            boolean messageInGmail,
             boolean messageExported) {}
 }
