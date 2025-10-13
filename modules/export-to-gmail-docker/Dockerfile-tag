@@ -3,10 +3,14 @@ ARG DOCKER_TAG_VERSION
 ARG GITHUB_RUN_NUMBER
 ENV DOCKER_TAG_VERSION=${DOCKER_TAG_VERSION}
 ENV GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
-RUN apt-get update -y && apt-get install -y locales 
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends locales curl \
+    && rm -rf /var/lib/apt/lists/*
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 RUN locale
 WORKDIR /workspace
+RUN mkdir -p /workspace/.data/h2-database/proton-mail-export-to-gmail \
+    /workspace/.data/proton-emls
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8

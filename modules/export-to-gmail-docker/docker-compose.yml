@@ -17,8 +17,22 @@ services:
         GMAIL_IMAP_PASSWORD: ${GMAIL_IMAP_PASSWORD:-}
         GMAIL_IMAP_MESSAGE_LIMIT: ${GMAIL_IMAP_MESSAGE_LIMIT:-50}
       volumes:
-        - ${HOST_PROTON_EXPORT_DATABASE_H2_DIR:.tmp}:/workspace/.data/h2-database/proton-mail-export-to-gmail
-        - ${HOST_PROTON_EMLS_DIR:.tmp}:/workspace/.data/proton-emls
+        - type: bind
+          source: ${HOST_PROTON_EXPORT_DATABASE_H2_DIR:-.tmp/h2-database}
+          target: /workspace/.data/h2-database/proton-mail-export-to-gmail
+          bind:
+            create_host_path: true
+        - type: bind
+          source: ${HOST_PROTON_EMLS_DIR:-.tmp/proton-emls}
+          target: /workspace/.data/proton-emls
+          bind:
+            create_host_path: true
       ports:
         - 8080:8080
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+        start_period: 30s
 
