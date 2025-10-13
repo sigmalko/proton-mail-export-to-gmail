@@ -16,3 +16,4 @@
 
 - Whenever `@GetMapping` or `@PostMapping` endpoints are added, removed, or modified, update the `clearSecurity(...)` calls in `OpenApiSecurityCustomizer` so they reference the current paths.
 - Keep the `environment` section for the `proton-mail-export-to-gmail` service in `modules/export-to-gmail-docker/docker-compose.yml` aligned with the environment variables referenced in `modules/export-to-gmail/src/main/resources/application.yml`.
+- Whenever you modify repository content, review and, if appropriate, refresh `CUSTOM_GPT.md` so it reflects the current behavior and wskazówki.
