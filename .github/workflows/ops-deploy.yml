@@ -1,8 +1,7 @@
 name: ops-deploy
 
 on:
-  registry_package:
-    types: [published]
+
   workflow_dispatch:
     inputs:
       docker_image_name:
@@ -14,6 +13,10 @@ on:
         description: Docker tag to deploy
         required: true
         type: string
+
+
+env:
+  REM_IMG_VER_NAME: IMG_VERSION_PROTON_MAIL_EXPORT_TO_GMAIL
 
 jobs:
 
@@ -44,3 +47,19 @@ jobs:
           env          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull & run image on prod env
+        uses: appleboy/ssh-action@master
+        with:
+          command_timeout: 2m
+          host: ${{ secrets.GHACTION_DEPLOY_SERVER_HOST }}
+          username: ${{ vars.GHACTION_DEPLOY_SERVER_USER }}
+          key: ${{ secrets.GHACTION_DEPLOY_SERVER_KEY }}
+          port: ${{ vars.GHACTION_DEPLOY_SERVER_PORT }}
+          script: |
+            cd solution
+            ls -al
+            docker ps
+            docker images
+            sed -i '/^'${{ env.REM_IMG_VER_NAME }}'=.*$/d' .env
+            echo ${{ env.REM_IMG_VER_NAME }}'='${{ github.event.inputs.docker_tag }} >> .env
