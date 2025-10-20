@@ -15,7 +15,7 @@ services:
         GMAIL_IMAP_SSL_ENABLED: true
         GMAIL_IMAP_USERNAME: ${GMAIL_IMAP_USERNAME:-}
         GMAIL_IMAP_PASSWORD: ${GMAIL_IMAP_PASSWORD:-}
-        GMAIL_IMAP_MESSAGE_LIMIT: ${GMAIL_IMAP_MESSAGE_LIMIT:-1000000}
+        GMAIL_IMAP_WINDOW_SIZE: ${GMAIL_IMAP_WINDOW_SIZE:-50}
       volumes:
         - type: bind
           source: ${HOST_PROTON_EXPORT_DATABASE_H2_DIR:-.tmp/h2-database}

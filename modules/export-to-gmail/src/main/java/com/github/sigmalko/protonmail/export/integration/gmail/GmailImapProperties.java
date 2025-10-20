@@ -11,6 +11,6 @@ public record GmailImapProperties(
         @DefaultValue("true") boolean sslEnabled,
         String username,
         String password,
-        @DefaultValue("50") int messageLimit
+        @DefaultValue("50") int windowSize
 ) {
 }

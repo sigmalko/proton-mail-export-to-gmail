@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import jakarta.mail.FetchProfile;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -52,10 +51,10 @@ public class GmailImapFetcher {
                 }
         }
 
-        public List<EmailHeader> fetchLatestHeaders() {
+        public void fetchLatestHeaders() {
                 if (!clientSupport.hasCredentials()) {
                         log.warn("Gmail IMAP credentials are not configured; skipping header fetch.");
-                        return List.of();
+                        return;
                 }
 
                 try (final var storeSession = clientSupport.openStore()) {
@@ -65,17 +64,13 @@ public class GmailImapFetcher {
                         final var readableFolders = folderExplorer.collectReadableFolders(store);
                         logDiscoveredFolders(readableFolders);
 
-                        final var headers = new ArrayList<EmailHeader>();
-                        final var messageLimit = properties.messageLimit();
+                        final var windowSize = properties.windowSize();
 
                         for (final var folderName : readableFolders) {
-                                fetchHeadersFromFolder(store, folderName, messageLimit, headers);
+                                fetchHeadersFromFolder(store, folderName, windowSize);
                         }
-
-                        return List.copyOf(headers);
                 } catch (MessagingException exception) {
                         log.error("Failed to fetch Gmail message headers.", exception);
-                        return List.of();
                 }
         }
 
@@ -92,23 +87,27 @@ public class GmailImapFetcher {
                 log.info("folder.getNewMessageCount(): {}", folder.getNewMessageCount());
         }
 
-        private Optional<MessageWindow> determineWindow(Folder folder, int limit) throws MessagingException {
-                if (limit <= 0) {
-                        log.info("Configured message limit is {}. Skipping header retrieval.", limit);
-                        return Optional.empty();
+        private List<MessageWindow> determineWindows(Folder folder, int windowSize) throws MessagingException {
+                if (windowSize <= 0) {
+                        log.info("Configured window size is {}. Skipping header retrieval.", windowSize);
+                        return List.of();
                 }
 
                 final var messageCount = folder.getMessageCount();
                 if (messageCount == 0) {
                         log.info("Folder {} is empty. Skipping header retrieval.", folder.getFullName());
-                        return Optional.empty();
+                        return List.of();
                 }
 
-                final var start = Math.max(1, messageCount - limit + 1);
-                final var end = messageCount;
+                final var windows = new ArrayList<MessageWindow>();
+                for (var end = messageCount; end >= 1;) {
+                        final var start = Math.max(1, end - windowSize + 1);
+                        log.info("Getting messages {} - {}", start, end);
+                        windows.add(new MessageWindow(start, end));
+                        end = start - 1;
+                }
 
-                log.info("Getting messages {} - {}", start, end);
-                return Optional.of(new MessageWindow(start, end));
+                return List.copyOf(windows);
         }
 
         @SneakyThrows(MessagingException.class)
@@ -144,7 +143,7 @@ public class GmailImapFetcher {
                 log.info("{};;{};{};{}", header.messageNumber(), messageId, formattedDate, from);
         }
 
-        private void fetchHeadersFromFolder(Store store, String folderName, int messageLimit, List<EmailHeader> accumulator) {
+        private void fetchHeadersFromFolder(Store store, String folderName, int windowSize) {
                 Folder folder = null;
                 try {
                         folder = store.getFolder(folderName);
@@ -161,9 +160,15 @@ public class GmailImapFetcher {
                         folder.open(Folder.READ_ONLY);
                         logFolderDetails(folder);
 
-                        final var window = determineWindow(folder, messageLimit);
-                        if (window.isPresent()) {
-                                accumulator.addAll(fetchHeaders(folder, window.orElseThrow()));
+                        final var windows = determineWindows(folder, windowSize);
+                        for (final var window : windows) {
+                                final var headers = fetchHeaders(folder, window);
+                                log.info(
+                                                "Processed {} Gmail headers from folder '{}' window {}-{}.",
+                                                headers.size(),
+                                                folder.getFullName(),
+                                                window.start(),
+                                                window.end());
                         }
                 } catch (MessagingException exception) {
                         log.warn("Failed to fetch Gmail message headers from folder '{}'.", folderName, exception);
