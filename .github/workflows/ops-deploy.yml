@@ -9,6 +9,7 @@ on:
         description: Docker image to deploy
         required: true
         type: string
+        default: proton-mail-export-to-gmail
       docker_tag:
         description: Docker tag to deploy
         required: true
