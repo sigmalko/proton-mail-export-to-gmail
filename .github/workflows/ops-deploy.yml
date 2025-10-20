@@ -1,4 +1,5 @@
 name: ops-deploy
+run-name: deploy tag - ${{ github.event.inputs.docker_tag }}
 
 on:
 
