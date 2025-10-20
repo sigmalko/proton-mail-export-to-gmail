@@ -1,6 +1,6 @@
 <configuration>
     <property name="SN_LOG_PATTERN" value="%d{MMdd HH:mm:ss.SSS}|%thread|%-5level|%logger| %m%n%ex{20}"/>
-    <property name="LOGS_ROOT" value="logs"/>
+    <property name="LOGS_ROOT" value="/workspace/.logs"/>
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${LOGS_ROOT}/std.log</file>
         <append>true</append>

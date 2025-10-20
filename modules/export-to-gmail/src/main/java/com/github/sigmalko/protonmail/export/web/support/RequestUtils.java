@@ -1,7 +1,6 @@
 package com.github.sigmalko.protonmail.export.web.support;
 
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -12,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "RequestUtils")
 @UtilityClass
 public class RequestUtils {
 
@@ -23,14 +22,14 @@ public class RequestUtils {
         while (headerNames.hasMoreElements()) {
             final var name = headerNames.nextElement();
             final var value = request.getHeader(name);
-            log.info("{}|Header|{}={}", label, name, value);
+            log.debug("{}|Header|{}={}", label, name, value);
         }
 
         final var paramNames = request.getParameterNames();
         while (paramNames.hasMoreElements()) {
             final var name = paramNames.nextElement();
             final var value = request.getParameter(name);
-            log.info("{}|Parameter|{}={}", label, name, value);
+            log.debug("{}|Parameter|{}={}", label, name, value);
         }
     }
 

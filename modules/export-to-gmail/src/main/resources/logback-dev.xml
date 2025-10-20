@@ -6,6 +6,8 @@
     </appender>
     <logger name="com.gargoylesoftware.htmlunit" level="ERROR"/>
     <logger name="org.htmlunit" level="ERROR"/>
+    <logger name="RequestUtils" level="INFO"/>
+    <logger name="REQUEST_LOGGING_FILTER" level="INFO"/>
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>

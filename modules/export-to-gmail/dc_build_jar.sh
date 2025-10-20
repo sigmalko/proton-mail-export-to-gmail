@@ -1,4 +1,8 @@
 #!/bin/bash
+
+export GMAIL_IMAP_FETCH_ENABLED="false"
+export EML_READER_ENABLED="true"
+
 {
     mvn clean package
 } || {

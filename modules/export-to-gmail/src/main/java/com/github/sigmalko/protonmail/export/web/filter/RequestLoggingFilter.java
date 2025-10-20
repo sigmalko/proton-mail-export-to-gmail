@@ -32,7 +32,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         final var windows = RequestUtils.isWindows(request);
         final var bot = RequestUtils.isBot(request);
 
-        log.info(
+        log.debug(
                 "{}|ClientIp={} android={} windows={} bot={}",
                 actionName,
                 clientIp,

@@ -20,7 +20,8 @@ public interface MigrationRepository extends JpaRepository<MigrationEntity, Long
 
     long countByMessageInGmailFalseAndMessageInFileTrue();
 
-    List<String> findAllMessageIdByMessageInGmailFalseAndMessageInFileTrue();
+        @Query("select m.messageId from MigrationEntity m where m.messageInGmail = false and m.messageInFile = true")
+        List<String> findAllMessageIdByMessageInGmailFalseAndMessageInFileTrue();
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update MigrationEntity m set m.messageInFile = :value where m.messageId = :messageId")
