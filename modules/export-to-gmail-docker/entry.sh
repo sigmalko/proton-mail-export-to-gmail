@@ -12,7 +12,4 @@ java -version
 pwd
 ls -al
 ls -al *.jar
-ls -al /workspace/.data
-ls -al /workspace/.data/h2-database
-ls -al /workspace/.data/proton-emls
 java -server -Dspring.profiles.active=prod -Dlogging.config=classpath:logback-prod.xml -jar *.jar -Duser.timezone=$TZ -Djava.security.egd=file:/dev/./urandom
