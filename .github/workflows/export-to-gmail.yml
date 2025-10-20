@@ -26,6 +26,7 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  actions: write
 
 jobs:
 
@@ -156,7 +157,7 @@ jobs:
       - name: Trigger ops-deploy workflow
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.ACTIONS_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh workflow run ops-deploy.yml \
             --ref "${{ github.ref_name }}" \
