@@ -1,8 +1,8 @@
 FROM openjdk:21-slim
 ARG DOCKER_TAG_VERSION
 ARG GITHUB_RUN_NUMBER
-ENV DOCKER_TAG_VERSION=${DOCKER_TAG_VERSION}
-ENV GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
+ENV DOCKER_TAG_VERSION ${DOCKER_TAG_VERSION}
+ENV GITHUB_RUN_NUMBER ${GITHUB_RUN_NUMBER}
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends locales curl \
     && rm -rf /var/lib/apt/lists/*
@@ -21,8 +21,8 @@ VOLUME /workspace/.logs
 COPY entry.sh /workspace/entry.sh
 RUN chmod +x /workspace/entry.sh
 
-ENV TZ=Europe/Warsaw
-ENV LOG_PATH=/workspace/.logs
-ENV PID_FILE=application.pid
+ENV TZ Europe/Warsaw
+ENV LOG_PATH /workspace/.logs
+ENV PID_FILE application.pid
 
 ENTRYPOINT /workspace/entry.sh
