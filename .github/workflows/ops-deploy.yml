@@ -69,4 +69,4 @@ jobs:
           port: ${{ vars.GHACTION_DEPLOY_SERVER_PORT }}
           source: ./modules/export-to-gmail-docker/docker-compose.yml
           target: /home/ubuntu/solution
-          strip_components: 2
+          strip_components: 3
