@@ -5,7 +5,7 @@ services:
       restart: unless-stopped   
       environment:
         SERVER_PORT: 8080
-        SWAGGER_SERVER_PUBLIC_URL: https://github.com/sigmalko/proton-mail-export-to-gmail
+        SWAGGER_SERVER_PUBLIC_URL: ${SWAGGER_SERVER_PUBLIC_URL:-https://github.com/sigmalko/proton-mail-export-to-gmail}
         PROTONMAIL_EXPORT_DATABASE_FILE_PATH: /workspace/.data/h2-database/proton-mail-export-to-gmail
         EML_READER_ENABLED: false
         EML_READER_DIRECTORY: /workspace/.data/proton-emls
