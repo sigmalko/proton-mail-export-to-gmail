@@ -9,22 +9,20 @@ RUN apt-get update -y \
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 RUN locale
 WORKDIR /workspace
-RUN mkdir -p /workspace/.data/h2-database/proton-mail-export-to-gmail \
-    /workspace/.data/proton-emls
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
+VOLUME /workspace/.data/h2-database
+VOLUME /workspace/.data/proton-emls
+VOLUME /workspace/.app
+VOLUME /workspace/.logs
 
 COPY entry.sh /workspace/entry.sh
 RUN chmod +x /workspace/entry.sh
 
-# COPY target/*.jar /workspace/.
-# ENV TZ=Europe/Warsaw
-# ENV LOG_PATH=/workspace_out/logs
-# ENV PID_FILE=application.pid
-# VOLUME /workspace_out/logs
-
-# ENTRYPOINT java -server -Dspring.profiles.active=prod -Dlogging.config=classpath:logback-prod.xml -jar *.jar -Duser.timezone=$TZ -Djava.security.egd=file:/dev/./urandom
+ENV TZ=Europe/Warsaw
+ENV LOG_PATH=/workspace/.logs
+ENV PID_FILE=application.pid
 
 ENTRYPOINT /workspace/entry.sh

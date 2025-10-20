@@ -19,7 +19,7 @@ services:
       volumes:
         - type: bind
           source: ${HOST_PROTON_EXPORT_DATABASE_H2_DIR:-.tmp/h2-database}
-          target: /workspace/.data/h2-database/proton-mail-export-to-gmail
+          target: /workspace/.data/h2-database
           bind:
             create_host_path: true
         - type: bind
@@ -27,6 +27,16 @@ services:
           target: /workspace/.data/proton-emls
           bind:
             create_host_path: true
+        - type: bind
+          source: ${HOST_PROTON_APP_DIR:-.tmp/proton-app}
+          target: /workspace/.app
+          bind:
+            create_host_path: true            
+        - type: bind
+          source: ${HOST_PROTON_LOGS_DIR:-.tmp/proton-logs}
+          target: /workspace/.logs
+          bind:
+            create_host_path: true              
       ports:
         - 8080:8080
       healthcheck:
