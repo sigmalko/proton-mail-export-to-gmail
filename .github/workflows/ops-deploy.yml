@@ -1,0 +1,33 @@
+name: ops-deploy
+
+on:
+  registry_package:
+    types: [published]
+
+jobs:
+
+  deploying:
+    runs-on: ubuntu-latest
+    environment: ovh-deploy   
+    timeout-minutes: 5
+
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Show informations about release
+        run: |
+          echo "SIG GHACTION_DEP_NAME : "${{ vars.GHACTION_DEP_NAME }}
+          echo "SIG : github.event.registry_package.name="${{ github.event.registry_package.name }}
+          echp "SIG github.event.registry_package.package_version.container_metadata.tag.name="${{ github.event.registry_package.package_version.container_metadata.tag.name }}
+          echo "New Docker image 1: ${{ github.event.registry_package.name }}"
+          echo "New Docker image 2: ${{ github.event.registry_package.namespace }}"          
+          echo "New Docker image 3: ${{ github.repository }}"
+          echo "New Docker image 4: ${{ github.ref_name }}"
+          echo "New Docker image 5: ${{ github.event_name }}"
+          echo "New Docker image 6: ${{ github.workflow }}"
+          echo "New Docker image 7: ${{ github.event.registry_package.package_version.container_metadata.tag.name }}"
+          env          
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
