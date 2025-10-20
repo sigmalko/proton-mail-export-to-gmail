@@ -15,7 +15,6 @@ ENV LC_ALL en_US.UTF-8
 
 VOLUME /workspace/.data/h2-database
 VOLUME /workspace/.data/proton-emls
-VOLUME /workspace/.app
 VOLUME /workspace/.logs
 
 COPY entry.sh /workspace/entry.sh
@@ -24,5 +23,7 @@ RUN chmod +x /workspace/entry.sh
 ENV TZ Europe/Warsaw
 ENV LOG_PATH /workspace/.logs
 ENV PID_FILE application.pid
+
+COPY *.jar /workspace/
 
 ENTRYPOINT /workspace/entry.sh

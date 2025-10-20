@@ -26,12 +26,7 @@ services:
           source: ${HOST_PROTON_EMLS_DIR:-.tmp/proton-emls}
           target: /workspace/.data/proton-emls
           bind:
-            create_host_path: true
-        - type: bind
-          source: ${HOST_PROTON_APP_DIR:-.tmp/proton-app}
-          target: /workspace/.app
-          bind:
-            create_host_path: true            
+            create_host_path: true       
         - type: bind
           source: ${HOST_PROTON_LOGS_DIR:-.tmp/proton-logs}
           target: /workspace/.logs

@@ -10,7 +10,7 @@ on:
       - '.github/workflows/export-to-gmail.yml'
       - 'modules/export-to-gmail/pom.xml'
       - 'modules/export-to-gmail/src/**'
-      - 'modules/export-to-gmail/Dockerfile-tag'
+      - 'modules/export-to-gmail-docker/**'
 
 env:
   JAVA_VERSION: 21
@@ -19,6 +19,8 @@ env:
   MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   GITHUB_PACKAGES_URL: https://maven.pkg.github.com/${{ github.repository }}
   VERSION_PREFIX: v1.
+  DOCKERFILE_DIRECTORY_PATH: modules/export-to-gmail-docker  
+  DOCKER_IMAGE_NAME: proton-mail-export-to-gmail
 
 permissions:
   contents: write
@@ -26,6 +28,7 @@ permissions:
   id-token: write
 
 jobs:
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -100,3 +103,52 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
+      - name: List all releases
+        if: success() # Only run if previous step succeeded      
+        run: |
+          gh release list --limit 10 --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download JAR files from latest release
+        if: success() # Only run if previous step succeeded      
+        run: |
+          cd ${{ env.DOCKERFILE_DIRECTORY_PATH }}
+          pwd          
+          ls -al
+          echo "Download tag release: "${{ steps.set_version.outputs.target_version }}
+          gh release download ${{ steps.set_version.outputs.target_version }} -p '*.jar'        
+          ls -al 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+
+      - name: Log in to GitHub Container Registry
+        if: success() # Only run if previous step succeeded            
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        if: success() # Only run if previous step succeeded            
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}
+          flavor: |
+            latest=false                    
+
+      - name: Build and push Docker image
+        if: success() # Only run if previous step succeeded            
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.DOCKERFILE_DIRECTORY_PATH }}
+          file: ${{ env.DOCKERFILE_DIRECTORY_PATH }}/Dockerfile-tag
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.set_version.outputs.target_version }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DOCKER_TAG_VERSION=${{ steps.set_version.outputs.target_version }}
+            GITHUB_RUN_NUMBER=${{ github.run_number }}
