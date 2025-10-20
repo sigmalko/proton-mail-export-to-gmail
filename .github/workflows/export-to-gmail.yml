@@ -156,7 +156,7 @@ jobs:
       - name: Trigger ops-deploy workflow
         if: success()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ACTIONS_TOKEN  }}
         run: |
           gh workflow run ops-deploy.yml \
             --ref "${{ github.ref_name }}" \
