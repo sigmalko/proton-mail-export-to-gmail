@@ -3,6 +3,16 @@ name: ops-deploy
 on:
   registry_package:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      docker_image_name:
+        description: Docker image to deploy
+        required: true
+        type: string
+      docker_tag:
+        description: Docker tag to deploy
+        required: true
+        type: string
 
 jobs:
 
@@ -20,7 +30,7 @@ jobs:
         run: |
           echo "SIG GHACTION_DEP_NAME : "${{ vars.GHACTION_DEP_NAME }}
           echo "SIG : github.event.registry_package.name="${{ github.event.registry_package.name }}
-          echp "SIG github.event.registry_package.package_version.container_metadata.tag.name="${{ github.event.registry_package.package_version.container_metadata.tag.name }}
+          echo "SIG github.event.registry_package.package_version.container_metadata.tag.name="${{ github.event.registry_package.package_version.container_metadata.tag.name }}
           echo "New Docker image 1: ${{ github.event.registry_package.name }}"
           echo "New Docker image 2: ${{ github.event.registry_package.namespace }}"          
           echo "New Docker image 3: ${{ github.repository }}"
@@ -28,6 +38,8 @@ jobs:
           echo "New Docker image 5: ${{ github.event_name }}"
           echo "New Docker image 6: ${{ github.workflow }}"
           echo "New Docker image 7: ${{ github.event.registry_package.package_version.container_metadata.tag.name }}"
+          echo "Input docker_image_name: ${{ github.event.inputs.docker_image_name }}"
+          echo "Input docker_tag: ${{ github.event.inputs.docker_tag }}"
           env          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

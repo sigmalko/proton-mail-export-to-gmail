@@ -152,3 +152,13 @@ jobs:
           build-args: |
             DOCKER_TAG_VERSION=${{ steps.set_version.outputs.target_version }}
             GITHUB_RUN_NUMBER=${{ github.run_number }}
+
+      - name: Trigger ops-deploy workflow
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run ops-deploy.yml \
+            --ref "${{ github.ref_name }}" \
+            -f docker_image_name="${{ env.DOCKER_IMAGE_NAME }}" \
+            -f docker_tag="${{ steps.set_version.outputs.target_version }}"
