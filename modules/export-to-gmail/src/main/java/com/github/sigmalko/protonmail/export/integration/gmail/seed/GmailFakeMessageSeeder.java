@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.github.sigmalko.protonmail.export.integration.gmail.GmailImapClientSupport;
 import com.github.sigmalko.protonmail.export.integration.gmail.GmailImapProperties;
 
-@Slf4j(topic = "GmailFakeMessageSeeder")
+@Slf4j(topic = "GMAIL")
 @Component
 @RequiredArgsConstructor
 public class GmailFakeMessageSeeder {

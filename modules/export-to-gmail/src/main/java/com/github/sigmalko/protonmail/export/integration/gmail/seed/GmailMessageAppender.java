@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
-@Slf4j(topic = "GmailMessageAppender")
+@Slf4j(topic = "GMAIL")
 @Component
 public class GmailMessageAppender {
 

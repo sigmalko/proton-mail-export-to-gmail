@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Slf4j(topic = "GmailEmailHeaderMapper")
+@Slf4j(topic = "GMAIL")
 @Component
 public class GmailEmailHeaderMapper {
 

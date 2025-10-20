@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-@Slf4j(topic = "GmailImapClientSupport")
+@Slf4j(topic = "GMAIL")
 @Component
 @RequiredArgsConstructor
 public class GmailImapClientSupport {

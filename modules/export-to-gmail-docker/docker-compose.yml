@@ -9,7 +9,7 @@ services:
         PROTONMAIL_EXPORT_DATABASE_FILE_PATH: /workspace/.data/h2-database/proton-mail-export-to-gmail
         EML_READER_ENABLED: false
         EML_READER_DIRECTORY: /workspace/.data/proton-emls
-        GMAIL_IMAP_FETCH_ENABLED: false
+        GMAIL_IMAP_FETCH_ENABLED: true
         GMAIL_IMAP_HOST: imap.gmail.com
         GMAIL_IMAP_PORT: 993
         GMAIL_IMAP_SSL_ENABLED: true

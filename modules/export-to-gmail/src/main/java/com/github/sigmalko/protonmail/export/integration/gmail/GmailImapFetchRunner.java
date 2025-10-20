@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-@Slf4j(topic = "GmailImapFetchRunner")
+@Slf4j(topic = "GMAIL")
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "gmail.imap", name = "fetch-enabled", havingValue = "true")

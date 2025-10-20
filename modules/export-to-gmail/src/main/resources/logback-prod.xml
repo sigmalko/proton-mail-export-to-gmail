@@ -20,16 +20,16 @@
             <charset>utf8</charset>
         </encoder>
     </appender>
-    <appender name="LIMITS" class="ch.qos.logback.core.FileAppender">
-        <file>${LOGS_ROOT}/limits.log</file>
+    <appender name="GMAIL" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS_ROOT}/gmail.log</file>
         <append>true</append>
         <encoder>
             <pattern>${SN_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
     </appender>
-    <logger name="LIMITS" level="INFO">
-        <appender-ref ref="LIMITS"/>
+    <logger name="GMAIL" level="INFO">
+        <appender-ref ref="GMAIL"/>
     </logger>
 
     <root level="INFO">

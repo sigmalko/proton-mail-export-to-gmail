@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
 
 import com.github.sigmalko.protonmail.export.integration.gmail.GmailImapProperties;
 
-@Slf4j(topic = "FakeGmailMessageFactory")
+@Slf4j(topic = "GMAIL")
 @Component
 public class FakeGmailMessageFactory {
 
