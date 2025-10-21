@@ -33,7 +33,14 @@ docker run --rm -ti \
     s3 cp /workspace/proton-imported.tar.gz s3://backup-lingmine-old/protonmail/proton-imported.tar.gz
 ```
 
+# Copy 1 file (tar.gz)
 
+```
+docker run --rm -ti \
+    -v /home/ubuntu/aws:/root/.aws -v /home/ubuntu/solution/h2db.tar.gz:/workspace/h2db.tar.gz \
+    amazon/aws-cli:2.31.9 --endpoint-url=<endpoint> \
+    s3 cp /workspace/h2db.tar.gz s3://backup-lingmine-old/protonmail/h2db.tar.gz
+```
 
 ## File `~/aws/config`
 
